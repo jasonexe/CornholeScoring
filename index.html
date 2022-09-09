@@ -1,5 +1,83 @@
 <html>
+<script src="ts_compile/scoring.js"></script>
+<script src="ts_compile/game_management.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+<link href="css/style.css" rel="stylesheet" />
+
 <body>
-    <div> Cornhole Scoring!!</div>
+    <!-- Main section with a border on each side, doesn't need to be super wide-->
+    <section class="main">
+        <section id="start_game">
+            <button onclick="selectTeams()"> Start New Game to 21 or over</button>
+        </section>
+
+        <section id="add_players" style="display: none">
+            <h1>
+                Team 1:
+            </h1>
+            <p>
+                <select name="team_one_player_one" id="team_one_player_one">
+                    <option value="jason">Jason</option>
+                </select>
+            </p>
+            <p>
+                <select name="team_one_player_two" id="team_one_player_two">
+                    <option value="nuray">Nuray</option>
+                </select>
+            </p>
+
+            <h1>
+                Team 2:
+            </h1>
+            <p>
+                <select name="team_two_player_one" id="team_two_player_one">
+                    <option value="jonathan">Jonathan</option>
+                </select>
+            </p>
+
+            <p>
+                <select name="team_two_player_two" id="team_one_player_two">
+                    <option value="andrew">Andrew</option>
+                </select>
+            </p>
+
+            <button onclick="startGame()">Start Game</button>
+        </section>
+
+        <section id="game_screen" style="display: none">
+            <header>
+                <button onclick="endGame()">Cancel Game</button>
+            </header>
+            <section id="player_states">
+                <div>
+                    <div>
+                        <select name="team_one_players">
+                            <option>Jason</option>
+                            <option>Nuray</option>
+                        </select>
+                    </div>
+                    <div>
+                        <h1> 0 </h1>
+                    </div>
+                </div>
+                <div style="margin-top: 20px" id="frame_count">
+                    Frame 1
+                </div>
+                <div>
+                    <div>
+                        <select name="team_two_players">
+                            <option>Jonathan</option>
+                            <option>Andrew</option>
+                        </select>
+                    </div>
+                    <div>
+                        <h1> 0 </h1>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </section>
 </body>
+
 </html>

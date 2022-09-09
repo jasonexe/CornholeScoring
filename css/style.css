@@ -1,0 +1,19 @@
+.main {
+    display: grid;
+    justify-content: center;
+    margin: 30px;
+    justify-items: center;
+}
+
+#game_screen {
+    width: 300%;
+}
+
+#player_states {
+    display: flex;
+    justify-content: space-between;
+}
+
+header {
+    text-align: center;
+}

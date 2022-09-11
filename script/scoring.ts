@@ -3,34 +3,6 @@ enum TeamSide {
     RIGHT,
 }
 
-class CornholeGame {
-    id: number = Date.now();
-    leftTeam: Array<CornholePlayer>;
-    rightTeam: Array<CornholePlayer>;
-    pastFrames = new Array<CornholeFrame>();
-    numberOfBags: number;
-
-    currentFrame: CornholeFrame;
-    currentScore: Score = new Score();
-
-    constructor(numberOfBags: number, leftTeam: Array<CornholePlayer>, rightTeam: Array<CornholePlayer>) {
-        this.leftTeam = leftTeam;
-        this.rightTeam = rightTeam;
-        this.numberOfBags = numberOfBags;
-        this.currentFrame = new CornholeFrame(0, numberOfBags);
-    }
-
-    submitFrame() {
-        this.pastFrames.push(this.currentFrame);
-        this.currentScore.appendScore(this.currentFrame.getFrameScore());
-        let playerTurn = this.pastFrames.length % 2;
-        this.leftTeam[playerTurn].games[this.id].push(new IndividualFrame(this.currentFrame, TeamSide.LEFT));
-        this.rightTeam[playerTurn].games[this.id].push(new IndividualFrame(this.currentFrame, TeamSide.RIGHT));
-
-        this.currentFrame = new CornholeFrame(this.pastFrames.length, this.numberOfBags);
-    }
-}
-
 class Score {
     // Total score after subtraction
     leftCalculatedScore: number = 0;
@@ -41,29 +13,21 @@ class Score {
     // Raw score
     rightRawScore: number = 0;
 
-    appendScore(partialScore: Score) {
+    appendScore(partialScore: Score): Score {
         this.leftCalculatedScore += partialScore.leftCalculatedScore;
         this.rightCalculatedScore += partialScore.rightCalculatedScore;
         this.leftRawScore += partialScore.leftRawScore;
         this.rightRawScore += partialScore.rightRawScore;
-    }
-}
-
-class CornholePlayer {
-    // The name of the player - should be unique, only one player ever can have a given name.
-    name: string;
-    games = new Map<number, Array<IndividualFrame>>();
-
-    constructor(name: string) {
-        this.name = name;
+        return this;
     }
 
-    registerGame(gameId: number) {
-        this.games[gameId] = new Array<IndividualFrame>();
-    }
-
-    getGameStats(gameId: number): GameStats {
-        return new GameStats();
+    static fromJson(jsonScore: Score) {
+        let funcScore = new Score();
+        funcScore.leftCalculatedScore = jsonScore.leftCalculatedScore;
+        funcScore.leftRawScore = jsonScore.leftRawScore;
+        funcScore.rightCalculatedScore = jsonScore.rightCalculatedScore;
+        funcScore.rightRawScore = jsonScore.rightRawScore;
+        return funcScore;
     }
 }
 
@@ -88,15 +52,22 @@ class CornholeFrame {
         this.bagsPossible = bagsPossible;
     }
 
+    static fromJson(jsonFrame: CornholeFrame) {
+        let fullFrame = new CornholeFrame(jsonFrame.frameSequence, jsonFrame.bagsPossible);
+        fullFrame.leftScore = jsonFrame.leftScore;
+        fullFrame.rightScore = jsonFrame.rightScore;
+        return fullFrame;
+    }
+
     addBagResult(teamSide: TeamSide, bagStatus: BagStatus) {
         if (teamSide === TeamSide.LEFT) {
             // Don't increment if we've already reached the highest possible bag number
-            if (this.leftScore.length > this.bagsPossible) {
+            if (this.leftScore.length >= this.bagsPossible) {
                 return;
             }
             this.leftScore.push(bagStatus);
         } else {
-            if (this.rightScore.length > this.bagsPossible) {
+            if (this.rightScore.length >= this.bagsPossible) {
                 return;
             }
             this.rightScore.push(bagStatus);
@@ -105,13 +76,13 @@ class CornholeFrame {
 
     removeBagResult(teamSide: TeamSide, bagStatus: BagStatus) {
         if (teamSide === TeamSide.LEFT) {
-            let indexOfBag = this.leftScore.findIndex((bagStatus) => {return bagStatus});
+            let indexOfBag = this.leftScore.findIndex((arrayStatus) => {return arrayStatus === bagStatus});
             if (indexOfBag !== -1) {
                 this.leftScore.splice(indexOfBag, 1);
             }
         }
         if (teamSide === TeamSide.RIGHT) {
-            let indexOfBag = this.rightScore.findIndex((bagStatus) => {return bagStatus});
+            let indexOfBag = this.rightScore.findIndex((arrayStatus) => {return arrayStatus === bagStatus});
             if (indexOfBag !== -1) {
                 this.rightScore.splice(indexOfBag, 1);
             }

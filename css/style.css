@@ -9,11 +9,41 @@
     width: 300%;
 }
 
-#player_states {
+.horizontal_spacing {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
-header {
+header,
+h1, h2 {
     text-align: center;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+option, select {
+    text-transform: capitalize;
+}
+
+.score_button {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.divider {
+    flex-grow: 1;
+    border-bottom: 1px solid black;
+    margin: 5px
+}
+
+#score_state_buttons {
+    display: inline-flex;
+    margin-top: 1em;
+}
+
+#score_state_buttons div:last-child {
+    margin-left: 30px;
 }

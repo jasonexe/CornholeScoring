@@ -3,25 +3,6 @@ var TeamSide;
     TeamSide[TeamSide["LEFT"] = 0] = "LEFT";
     TeamSide[TeamSide["RIGHT"] = 1] = "RIGHT";
 })(TeamSide || (TeamSide = {}));
-class CornholeGame {
-    constructor(numberOfBags, leftTeam, rightTeam) {
-        this.id = Date.now();
-        this.pastFrames = new Array();
-        this.currentScore = new Score();
-        this.leftTeam = leftTeam;
-        this.rightTeam = rightTeam;
-        this.numberOfBags = numberOfBags;
-        this.currentFrame = new CornholeFrame(0, numberOfBags);
-    }
-    submitFrame() {
-        this.pastFrames.push(this.currentFrame);
-        this.currentScore.appendScore(this.currentFrame.getFrameScore());
-        let playerTurn = this.pastFrames.length % 2;
-        this.leftTeam[playerTurn].games[this.id].push(new IndividualFrame(this.currentFrame, TeamSide.LEFT));
-        this.rightTeam[playerTurn].games[this.id].push(new IndividualFrame(this.currentFrame, TeamSide.RIGHT));
-        this.currentFrame = new CornholeFrame(this.pastFrames.length, this.numberOfBags);
-    }
-}
 class Score {
     constructor() {
         // Total score after subtraction
@@ -38,18 +19,15 @@ class Score {
         this.rightCalculatedScore += partialScore.rightCalculatedScore;
         this.leftRawScore += partialScore.leftRawScore;
         this.rightRawScore += partialScore.rightRawScore;
+        return this;
     }
-}
-class CornholePlayer {
-    constructor(name) {
-        this.games = new Map();
-        this.name = name;
-    }
-    registerGame(gameId) {
-        this.games[gameId] = new Array();
-    }
-    getGameStats(gameId) {
-        return new GameStats();
+    static fromJson(jsonScore) {
+        let funcScore = new Score();
+        funcScore.leftCalculatedScore = jsonScore.leftCalculatedScore;
+        funcScore.leftRawScore = jsonScore.leftRawScore;
+        funcScore.rightCalculatedScore = jsonScore.rightCalculatedScore;
+        funcScore.rightRawScore = jsonScore.rightRawScore;
+        return funcScore;
     }
 }
 // The status of a bag in a given frame, in = 3 points, on = 1 point. Don't store off explicitly
@@ -67,16 +45,22 @@ class CornholeFrame {
         this.frameSequence = frameSequence;
         this.bagsPossible = bagsPossible;
     }
+    static fromJson(jsonFrame) {
+        let fullFrame = new CornholeFrame(jsonFrame.frameSequence, jsonFrame.bagsPossible);
+        fullFrame.leftScore = jsonFrame.leftScore;
+        fullFrame.rightScore = jsonFrame.rightScore;
+        return fullFrame;
+    }
     addBagResult(teamSide, bagStatus) {
         if (teamSide === TeamSide.LEFT) {
             // Don't increment if we've already reached the highest possible bag number
-            if (this.leftScore.length > this.bagsPossible) {
+            if (this.leftScore.length >= this.bagsPossible) {
                 return;
             }
             this.leftScore.push(bagStatus);
         }
         else {
-            if (this.rightScore.length > this.bagsPossible) {
+            if (this.rightScore.length >= this.bagsPossible) {
                 return;
             }
             this.rightScore.push(bagStatus);
@@ -84,13 +68,13 @@ class CornholeFrame {
     }
     removeBagResult(teamSide, bagStatus) {
         if (teamSide === TeamSide.LEFT) {
-            let indexOfBag = this.leftScore.findIndex((bagStatus) => { return bagStatus; });
+            let indexOfBag = this.leftScore.findIndex((arrayStatus) => { return arrayStatus === bagStatus; });
             if (indexOfBag !== -1) {
                 this.leftScore.splice(indexOfBag, 1);
             }
         }
         if (teamSide === TeamSide.RIGHT) {
-            let indexOfBag = this.rightScore.findIndex((bagStatus) => { return bagStatus; });
+            let indexOfBag = this.rightScore.findIndex((arrayStatus) => { return arrayStatus === bagStatus; });
             if (indexOfBag !== -1) {
                 this.rightScore.splice(indexOfBag, 1);
             }

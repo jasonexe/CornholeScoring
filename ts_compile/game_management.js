@@ -53,6 +53,16 @@ class CornholeGame {
         updateCurrentThrower();
         storeCurrentGame(this);
         updateScoreDisplay();
+        if (this.currentScore.leftCalculatedScore >= 21) {
+            // Left team won!
+            endGame();
+            alert("The left team won! Nice Job!");
+        }
+        if (this.currentScore.rightCalculatedScore >= 21) {
+            // Right team won!
+            endGame();
+            alert("The right team won! Nice Job!");
+        }
     }
     getCurrentScore() {
         return new Score().appendScore(this.currentScore).appendScore(this.currentFrame.getFrameScore());
@@ -94,6 +104,7 @@ let updateScoreDisplay = function () {
     // Updates the number of each bag type
     updatePlayerBagStatusDisplay(currentFrame);
     updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
+    updatePastFrames();
 };
 let selectTeams = function () {
     // Read the DOM and do stuff to create a CornholeGame instance.

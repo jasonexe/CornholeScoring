@@ -1,15 +1,4 @@
 <html>
-<!-- <script src="bower_components/serialijse/dist/serialijse.bundle.js"></script> -->
-<!--<script>
-    // var exports = {};
-    const {
-        serialize,
-        deserialize,
-        declarePersistable,
-        serializeZ,
-        deserializeZ,
-    } = serialijse;
-</script> -->
 <script src="ts_compile/window_management.js"></script>
 <script src="ts_compile/scoring.js"></script>
 <script src="ts_compile/game_management.js"></script>
@@ -29,6 +18,11 @@
 
         <section id="add_players" style="display: none">
             <button onclick="createNewPlayer(true)">Create new player</button>
+            <div style="margin-top:1em">
+                <select id="player_to_remove">
+                </select>
+                <button onclick="removePlayer()">Remove this player</button>
+            </div>
             <h1>
                 Team 1:
             </h1>
@@ -73,7 +67,7 @@
                 </div>
                 <div>
                     <div style="margin-top: 20px" id="frame_count">
-                        Frame 1
+                        <b>Frame <span id="frame_number">1</span></b>
                     </div>
                 </div>
                 <div>
@@ -90,7 +84,8 @@
                 <div id="hole_score_buttons" class="horizontal_spacing">
                     <div>
                         <button class="score_button" onclick="addThrow(BagStatus.IN, TeamSide.LEFT)">+</button> <span
-                            id="number_in_left_hole">0</span> <button onclick="subtractThrow(BagStatus.IN, TeamSide.LEFT)" class="score_button">-</button>
+                            id="number_in_left_hole">0</span> <button
+                            onclick="subtractThrow(BagStatus.IN, TeamSide.LEFT)" class="score_button">-</button>
                     </div>
                     <span class="divider"></span>
                     <div>
@@ -98,14 +93,16 @@
                     </div>
                     <span class="divider"></span>
                     <div>
-                        <button class="score_button" onclick="addThrow(BagStatus.IN, TeamSide.RIGHT)">+</button> <span id="number_in_right_hole">0</span> <button
-                            class="score_button" onclick="subtractThrow(BagStatus.IN, TeamSide.RIGHT)">-</button>
+                        <button class="score_button" onclick="addThrow(BagStatus.IN, TeamSide.RIGHT)">+</button> <span
+                            id="number_in_right_hole">0</span> <button class="score_button"
+                            onclick="subtractThrow(BagStatus.IN, TeamSide.RIGHT)">-</button>
                     </div>
                 </div>
                 <div id="board_score_buttons" class="horizontal_spacing" style="margin-top: 2em">
                     <div>
-                        <button class="score_button" onclick="addThrow(BagStatus.ON, TeamSide.LEFT)">+</button> <span id="number_in_left_board">0</span> <button
-                            class="score_button" onclick="subtractThrow(BagStatus.ON, TeamSide.LEFT)">-</button>
+                        <button class="score_button" onclick="addThrow(BagStatus.ON, TeamSide.LEFT)">+</button> <span
+                            id="number_in_left_board">0</span> <button class="score_button"
+                            onclick="subtractThrow(BagStatus.ON, TeamSide.LEFT)">-</button>
                     </div>
                     <span class="divider"></span>
                     <div>
@@ -113,17 +110,18 @@
                     </div>
                     <span class="divider"></span>
                     <div>
-                        <button class="score_button" onclick="addThrow(BagStatus.ON, TeamSide.RIGHT)">+</button> <span id="number_in_right_board">0</span> <button
-                            class="score_button" onclick="subtractThrow(BagStatus.ON, TeamSide.RIGHT)">-</button>
+                        <button class="score_button" onclick="addThrow(BagStatus.ON, TeamSide.RIGHT)">+</button> <span
+                            id="number_in_right_board">0</span> <button class="score_button"
+                            onclick="subtractThrow(BagStatus.ON, TeamSide.RIGHT)">-</button>
                     </div>
                 </div>
             </section>
             <section id="score_state_buttons">
                 <div>
-                    <button>Clear</button>
+                    <button style="background-color: red;">Clear</button>
                 </div>
                 <div>
-                    <button onclick="submitFrame()">Submit</button>
+                    <button style="background-color: lightgreen;" onclick="submitFrame()">Submit</button>
                 </div>
             </section>
             <section id="overall_scoring" style="margin-top: 2em">
@@ -144,7 +142,7 @@
                 </div>
             </section>
             <section id="past_frames" style="margin-top:2em">
-                <header>Past Frames</header>
+                <!-- This section contains the past frames that are displayed during the game. -->
             </section>
         </section>
     </section>

@@ -64,6 +64,16 @@ class CornholeGame {
         updateCurrentThrower();
         storeCurrentGame(this);
         updateScoreDisplay();
+        if (this.currentScore.leftCalculatedScore >= 21) {
+            // Left team won!
+            endGame();
+            alert("The left team won! Nice Job!")
+        }
+        if (this.currentScore.rightCalculatedScore >= 21) {
+            // Right team won!
+            endGame();
+            alert("The right team won! Nice Job!")
+        }
     }
 
     getCurrentScore() {
@@ -113,6 +123,7 @@ let updateScoreDisplay = function () {
     updatePlayerBagStatusDisplay(currentFrame);
     
     updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
+    updatePastFrames();
 }
 
 let selectTeams = function () {

@@ -10,9 +10,10 @@ class CornholePlayer {
     }
 
     registerGame(gameId: number) {
-        if (!this.games[gameId]) {
-            this.games[gameId] = new Array<IndividualFrame>();
+        if (!this.games.get(gameId)) {
+            this.games.set(gameId, new Array<IndividualFrame>());
         }
+        this.updateStorage();
     }
 
     getGameStats(gameId: number): GameStats {
@@ -26,7 +27,7 @@ class CornholePlayer {
         }
         gameFrameArray.push(frame);
         this.games.set(gameId, gameFrameArray);
-        this.updateStorage;
+        this.updateStorage();
     }
 
     // Stores any updates to this CornholePlayer in LocalStorage
@@ -39,16 +40,6 @@ class CornholePlayer {
         let playerWithFunc = new CornholePlayer(basePlayer.name);
         playerWithFunc.games = basePlayer.games;
         return playerWithFunc;
-    }
-}
-
-// Sets up any storage if it hasn't been initialized yet
-let setupPage = function () {
-    initializePlayers();
-    updatePlayerSelectionList();
-    if (getCurrentGame()) {
-        // If there was already a game loaded, go straight to the game page.
-        displayGameProgress(getCurrentGame().pastFrames.length);
     }
 }
 
@@ -91,31 +82,22 @@ let createNewPlayer = function (firstTry: boolean) {
     updatePlayerSelectionList();
 }
 
-// TODO(jason) Add a removePlayer function.
-
-// Updates the dropdowns on screen 2, where the user selects which players are in the game.
-const updatePlayerSelectionList = function () {
+let removePlayer = function() {
+    let removalPlayerSelector = <HTMLSelectElement> document.getElementById("player_to_remove");
+    let removedPlayerName = removalPlayerSelector.selectedOptions[0].value;
     let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    var sortedPlayers = new Map([...allPlayers.entries()].sort());
-    let playerSelectors = document.getElementsByClassName("player_options");
-    for (let selector of Array.from(playerSelectors)) {
-        let castSelector = <HTMLSelectElement>selector;
-        castSelector.innerHTML = "";
-        for (let playerData of sortedPlayers) {
-            let option = new Option(playerData[0], playerData[0]);
-            option.textContent = playerData[0];
-            castSelector.add(option);
-        }
-    }
+    allPlayers.delete(removedPlayerName);
+    localStorage.setObject(PLAYER_KEY, allPlayers);
+    updatePlayerSelectionList();
 }
 
 // Just initializes 4 players if there aren't any
 let initializePlayers = function () {
     if (!localStorage.getObject(PLAYER_KEY)) {
-        let player1 = new CornholePlayer("player1");
-        let player2 = new CornholePlayer("player2");
-        let player3 = new CornholePlayer("player3");
-        let player4 = new CornholePlayer("player4");
+        let player1 = new CornholePlayer("zzplayer1");
+        let player2 = new CornholePlayer("zzplayer2");
+        let player3 = new CornholePlayer("zzplayer3");
+        let player4 = new CornholePlayer("zzplayer4");
         let playerSet = new Map<string, CornholePlayer>();
         playerSet.set(player2.name, player2);
         playerSet.set(player1.name, player1);

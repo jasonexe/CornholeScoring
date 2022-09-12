@@ -24,7 +24,11 @@ h2 {
     font-size: 1.5rem;
 }
 
-option, select {
+h3 {
+    font-size: 1.1rem;
+}
+
+option, select, .capitalize {
     text-transform: capitalize;
 }
 

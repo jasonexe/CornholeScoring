@@ -101,6 +101,8 @@ let updateFrameAndCurrentScoreDisplay = function (frameScore, gameScore) {
     rightGameScoreDisplay.innerText = gameScore.rightCalculatedScore.toString();
 };
 let updatePastFrames = function (game) {
+    let frameNumberDisplay = document.getElementById("frame_number");
+    frameNumberDisplay.innerText = game.currentFrame.frameSequence.toString();
     let pastFrameSection = document.getElementById("past_frames");
     pastFrameSection.innerHTML = "";
     pastFrameSection.style.display = "block";

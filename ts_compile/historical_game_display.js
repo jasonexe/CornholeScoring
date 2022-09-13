@@ -64,7 +64,6 @@ let displayGameInUrl = function () {
     buttonSection.append(secondPlayerButton);
     buttonSection.append(thirdPlayerButton);
     buttonSection.append(fourthPlayerButton);
-    console.log(buttonSection);
 };
 let getGameIdFromUrl = function () {
     const urlParams = new URLSearchParams(window.location.search);

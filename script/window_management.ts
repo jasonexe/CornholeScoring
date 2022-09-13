@@ -111,6 +111,8 @@ let updateFrameAndCurrentScoreDisplay = function (frameScore: Score, gameScore: 
 }
 
 let updatePastFrames = function (game: CornholeGame) {
+    let frameNumberDisplay = document.getElementById("frame_number");
+    frameNumberDisplay.innerText = game.currentFrame.frameSequence.toString();
     let pastFrameSection = document.getElementById("past_frames");
     pastFrameSection.innerHTML = "";
     pastFrameSection.style.display = "block";

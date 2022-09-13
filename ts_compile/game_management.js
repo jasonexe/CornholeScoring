@@ -52,7 +52,7 @@ class CornholeGame {
         this.currentFrame = new CornholeFrame(this.pastFrames.length, this.numberOfBags);
         updateCurrentThrower();
         storeCurrentGame(this);
-        updateScoreDisplay();
+        updateScoreDisplay(this);
         if (this.currentScore.leftCalculatedScore >= 21) {
             // Left team won!
             endGame();
@@ -70,12 +70,12 @@ class CornholeGame {
     addThrow(bagStatus, teamSide) {
         this.currentFrame.addBagResult(teamSide, bagStatus);
         storeCurrentGame(this);
-        updateScoreDisplay();
+        updateScoreDisplay(this);
     }
     subtractThrow(bagStatus, teamSide) {
         this.currentFrame.removeBagResult(teamSide, bagStatus);
         storeCurrentGame(this);
-        updateScoreDisplay();
+        updateScoreDisplay(this);
     }
 }
 // Hole + board management
@@ -91,8 +91,8 @@ let submitFrame = function () {
     getCurrentGame().submitFrame();
 };
 // Updates score for the frame, player, and overall score.
-let updateScoreDisplay = function () {
-    let game = getCurrentGame();
+let updateScoreDisplay = function (game) {
+    // let game = getCurrentGame();
     let frameScore = game.currentFrame.getFrameScore();
     let currentFrame = game.currentFrame;
     let gameScore = game.getCurrentScore();
@@ -103,8 +103,8 @@ let updateScoreDisplay = function () {
     rightPlayerRawScoreElement.innerText = frameScore.rightRawScore.toString();
     // Updates the number of each bag type
     updatePlayerBagStatusDisplay(currentFrame);
-    updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
-    updatePastFrames(game);
+    // updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
+    // updatePastFrames(game);
 };
 let selectTeams = function () {
     // Read the DOM and do stuff to create a CornholeGame instance.

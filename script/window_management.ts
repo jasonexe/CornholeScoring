@@ -11,8 +11,11 @@ let setupPage = function () {
 // Updates the dropdowns on screen 2, where the user selects which players are in the game.
 const updatePlayerSelectionList = function () {
     let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    let mostRecentGame = [...getPastGames().entries()].reduce(
-        (firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
+    let mostRecentGame;
+    if (getPastGames()) {
+        mostRecentGame = [...getPastGames().entries()].reduce(
+            (firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
+    }
 
     var sortedPlayers = new Map([...allPlayers.entries()].sort());
     let playerSelectors = Array.from(document.getElementsByClassName("player_options"));
@@ -21,7 +24,6 @@ const updatePlayerSelectionList = function () {
         let castSelector = <HTMLSelectElement>playerSelectors[selectorIndex];
         castSelector.innerHTML = "";
         let playerNum = 0;
-        console.log(mostRecentGame);
         for (let playerData of sortedPlayers) {
             let option = new Option(playerData[0], playerData[0]);
             option.textContent = playerData[0];
@@ -91,7 +93,7 @@ let displayGameProgress = function (frameNumber: number) {
     teamTwoSelector.querySelectorAll('option')[(frameNumber) % 2].selected = true
     let frameNumberDisplay = document.getElementById("frame_number");
     frameNumberDisplay.innerText = frameNumber.toString();
-    updateScoreDisplay();
+    updateScoreDisplay(currentGame);
     updatePastFrames(currentGame);
 }
 

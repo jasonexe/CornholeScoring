@@ -42,6 +42,10 @@ let getPlayer = function (playerName) {
     let allPlayers = localStorage.getObject(PLAYER_KEY);
     return CornholePlayer.fromJson(allPlayers.get(playerName));
 };
+let getPlayers = function () {
+    let allPlayers = localStorage.getObject(PLAYER_KEY);
+    return new Map([...allPlayers.entries()].sort());
+};
 let createNewPlayer = function (firstTry) {
     let playerName = prompt(firstTry ?
         "What is the name of the player?"

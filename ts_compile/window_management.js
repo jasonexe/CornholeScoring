@@ -10,21 +10,50 @@ let setupPage = function () {
 // Updates the dropdowns on screen 2, where the user selects which players are in the game.
 const updatePlayerSelectionList = function () {
     let allPlayers = localStorage.getObject(PLAYER_KEY);
+    let mostRecentGame = [...getPastGames().entries()].reduce((firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
     var sortedPlayers = new Map([...allPlayers.entries()].sort());
-    let playerSelectors = document.getElementsByClassName("player_options");
-    for (let selector of Array.from(playerSelectors)) {
-        let castSelector = selector;
+    let playerSelectors = Array.from(document.getElementsByClassName("player_options"));
+    for (let selectorIndexString in playerSelectors) {
+        let selectorIndex = parseInt(selectorIndexString);
+        let castSelector = playerSelectors[selectorIndex];
         castSelector.innerHTML = "";
+        let playerNum = 0;
+        console.log(mostRecentGame);
         for (let playerData of sortedPlayers) {
             let option = new Option(playerData[0], playerData[0]);
             option.textContent = playerData[0];
             castSelector.add(option);
+            if (mostRecentGame) {
+                // Assume we have at most 4 selectors
+                switch (selectorIndex) {
+                    case 0:
+                        if (playerData[0] === mostRecentGame[1].leftTeam[0].name) {
+                            castSelector.selectedIndex = playerNum;
+                        }
+                        break;
+                    case 1:
+                        if (playerData[0] === mostRecentGame[1].leftTeam[1].name) {
+                            castSelector.selectedIndex = playerNum;
+                        }
+                        break;
+                    case 2:
+                        if (playerData[0] === mostRecentGame[1].rightTeam[0].name) {
+                            castSelector.selectedIndex = playerNum;
+                        }
+                        break;
+                    case 3:
+                        if (playerData[0] === mostRecentGame[1].rightTeam[1].name) {
+                            castSelector.selectedIndex = playerNum;
+                        }
+                        break;
+                    default:
+                        // no op, nothing we can do
+                        break;
+                }
+            }
+            playerNum += 1;
         }
-        let selectorIndex = Array.from(playerSelectors).indexOf(selector);
-        if (selectorIndex > 1) {
-            castSelector.selectedIndex = playerSelectors.length - (selectorIndex - 3);
-        }
-        else {
+        if (!mostRecentGame) {
             castSelector.selectedIndex = selectorIndex;
         }
     }
@@ -182,6 +211,15 @@ let createDivWithText = function (text, bold) {
     if (bold) {
         divElement.className = "bold";
     }
+    return divElement;
+};
+let createCapitalizedDivWithText = function (text, bold) {
+    let divElement = document.createElement("div");
+    divElement.innerText = text;
+    if (bold) {
+        divElement.className = "bold";
+    }
+    divElement.classList.add("capitalize");
     return divElement;
 };
 // Always switches to the unselected one, regardless of what frame we're on

@@ -1,3 +1,40 @@
+// This method might be more appropriate in a new file, but I'm lazy
+// so just going to put it here. It initializes history.html. All the other
+// methods in this file manage game_summary.html
+let displayPastGamesSummary = function() {
+    let mainSection = document.getElementById("past_game_summaries");
+    mainSection.innerText = "";
+    for (let pastGame of getPastGames()) {
+        let encapsulatingLink = document.createElement("a");
+        encapsulatingLink.href = "game_summary.html?gameId=" + pastGame[1].id;
+        encapsulatingLink.className = "no_style";
+
+        let parentSection = document.createElement("section");
+        parentSection.className = "bordered_section";
+        let firstPlayerNameSection = document.createElement("section");
+        firstPlayerNameSection.className = "horizontal_spacing";
+        firstPlayerNameSection.append(createCapitalizedDivWithText(pastGame[1].leftTeam[0].name, /* bold= */ false));
+        firstPlayerNameSection.append(createCapitalizedDivWithText(pastGame[1].rightTeam[0].name, /* bold= */ false));
+        parentSection.append(firstPlayerNameSection);
+
+        let secondPlayerNameSection = document.createElement("section");
+        secondPlayerNameSection.className = "horizontal_spacing";
+        secondPlayerNameSection.append(createCapitalizedDivWithText(pastGame[1].leftTeam[1].name, /* bold= */ false));
+        secondPlayerNameSection.append(createCapitalizedDivWithText(pastGame[1].rightTeam[1].name, /* bold= */ false));
+        parentSection.append(secondPlayerNameSection);
+
+        let scoreSection = document.createElement("section");
+        scoreSection.className = "horizontal_spacing";
+        scoreSection.append(createHeader3WithText(pastGame[1].currentScore.leftCalculatedScore.toString()));
+        scoreSection.append(createHeader3WithText(pastGame[1].currentScore.rightCalculatedScore.toString()));
+        parentSection.append(scoreSection);
+
+        parentSection.append(createDivWithText(new Date(pastGame[0]).toLocaleString(), false));
+        encapsulatingLink.append(parentSection);
+        mainSection.prepend(encapsulatingLink);
+    }
+}
+
 // Stored as a global variable so we don't need to keep getting it
 let pastGame: CornholeGame;
 let displayGameInUrl = function () {

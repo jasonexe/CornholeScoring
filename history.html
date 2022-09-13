@@ -1,4 +1,5 @@
 <html>
+<script src="ts_compile/historical_game_display.js"></script>
 <script src="ts_compile/window_management.js"></script>
 <script src="ts_compile/scoring.js"></script>
 <script src="ts_compile/game_management.js"></script>
@@ -9,7 +10,7 @@
     integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 <link href="css/style.css" rel="stylesheet" />
 
-<body>
+<body onload="displayPastGamesSummary()">
     <section class="main">
         <a href="index.html"><button>Back to home</button></a>
         <section id="past_game_summaries" style="width:250%">

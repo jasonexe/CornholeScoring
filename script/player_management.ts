@@ -54,6 +54,11 @@ let getPlayer = function (playerName: string): CornholePlayer {
     return CornholePlayer.fromJson(allPlayers.get(playerName));
 }
 
+let getPlayers = function (): Map<string, CornholePlayer> {
+    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
+    return new Map([...allPlayers.entries()].sort());
+}
+
 let createNewPlayer = function (firstTry: boolean) {
     let playerName = prompt(firstTry ?
         "What is the name of the player?"

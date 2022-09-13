@@ -40,6 +40,41 @@ let pastGame: CornholeGame;
 let displayGameInUrl = function () {
     pastGame = getPastGame(getGameIdFromUrl());
     updatePastFrames(pastGame);
+
+    let buttonSection = document.getElementById("button_options");
+    let frameButton = document.createElement("button");
+    frameButton.innerText = "Frames";
+    frameButton.onclick = displayFrames;
+
+    let firstPlayerButton = document.createElement("button");
+    let firstPlayerName = pastGame.leftTeam[0].name;
+    firstPlayerButton.className = "capitalize";
+    firstPlayerButton.innerText = firstPlayerName;
+    firstPlayerButton.onclick = function() {displayPlayerPerformance(firstPlayerName)};
+
+    let secondPlayerButton = document.createElement("button");
+    let secondPlayerName = pastGame.leftTeam[1].name;
+    secondPlayerButton.className = "capitalize";
+    secondPlayerButton.innerText = secondPlayerName;
+    secondPlayerButton.onclick = function() {displayPlayerPerformance(secondPlayerName)};
+
+    let thirdPlayerButton = document.createElement("button");
+    let thirdPlayerName = pastGame.rightTeam[0].name;
+    thirdPlayerButton.className = "capitalize";
+    thirdPlayerButton.innerText = thirdPlayerName;
+    thirdPlayerButton.onclick = function() {displayPlayerPerformance(thirdPlayerName)};
+
+    let fourthPlayerButton = document.createElement("button");
+    let fourthPlayerName = pastGame.rightTeam[1].name;
+    fourthPlayerButton.className = "capitalize";
+    fourthPlayerButton.innerText = fourthPlayerName;
+    fourthPlayerButton.onclick = function() {displayPlayerPerformance(fourthPlayerName)};
+
+    buttonSection.append(frameButton);
+    buttonSection.append(firstPlayerButton);
+    buttonSection.append(secondPlayerButton);
+    buttonSection.append(thirdPlayerButton);
+    buttonSection.append(fourthPlayerButton);
 }
 
 let getGameIdFromUrl = function (): number {
@@ -48,7 +83,6 @@ let getGameIdFromUrl = function (): number {
 }
 
 let displayFrames = function () {
-    // updatePastFrames(pastGame);
     let pastFrameSection = document.getElementById("past_frames");
     pastFrameSection.style.display = "block";
 

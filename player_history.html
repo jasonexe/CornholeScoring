@@ -1,4 +1,12 @@
 <html>
+<script src="ts_compile/fastclick.js"></script>
+<script lang="js">
+    if ('addEventListener' in document) {
+        document.addEventListener('DOMContentLoaded', function () {
+            FastClick.attach(document.body);
+        }, false);
+    }
+</script>
 <script src="ts_compile/historical_player_stat_display.js"></script>
 <script src="ts_compile/window_management.js"></script>
 <script src="ts_compile/scoring.js"></script>
@@ -15,7 +23,7 @@
         <a href="index.html">
             <button>Back to Main</button>
         </a>
-        <br/>
+        <br />
         <!-- <section class="player_stat" style="width:200%">
             <h3 class="center_text">Jason</h3>
             <h3>Statistics</h3>

@@ -122,8 +122,8 @@ let updateScoreDisplay = function (game: CornholeGame) {
     // Updates the number of each bag type
     updatePlayerBagStatusDisplay(currentFrame);
 
-    // updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
-    // updatePastFrames(game);
+    updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
+    updatePastFrames(game);
 }
 
 let selectTeams = function () {

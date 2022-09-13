@@ -103,8 +103,8 @@ let updateScoreDisplay = function (game) {
     rightPlayerRawScoreElement.innerText = frameScore.rightRawScore.toString();
     // Updates the number of each bag type
     updatePlayerBagStatusDisplay(currentFrame);
-    // updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
-    // updatePastFrames(game);
+    updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
+    updatePastFrames(game);
 };
 let selectTeams = function () {
     // Read the DOM and do stuff to create a CornholeGame instance.

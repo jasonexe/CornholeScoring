@@ -46,7 +46,7 @@
         <section id="add_players" style="display: none">
             <button onclick="createNewPlayer(true)">Create new player</button>
             <div style="margin-top:1em">
-                <select id="player_to_remove">
+                <select id="player_to_remove" class="needsclick">
                 </select>
                 <button onclick="removePlayer()">Remove this player</button>
             </div>
@@ -54,11 +54,11 @@
                 Team 1:
             </h1>
             <p>
-                <select name="team_one_player_one" id="team_one_player_one" class="player_options">
+                <select name="team_one_player_one" id="team_one_player_one" class="player_options needsclick">
                 </select>
             </p>
             <p>
-                <select name="team_one_player_two" id="team_one_player_two" class="player_options">
+                <select name="team_one_player_two" id="team_one_player_two" class="player_options needsclick">
                 </select>
             </p>
 
@@ -66,12 +66,12 @@
                 Team 2:
             </h1>
             <p>
-                <select name="team_two_player_one" id="team_two_player_one" class="player_options">
+                <select name="team_two_player_one" id="team_two_player_one" class="player_options needsclick">
                 </select>
             </p>
 
             <p>
-                <select name="team_two_player_two" id="team_two_player_two" class="player_options">
+                <select name="team_two_player_two" id="team_two_player_two" class="player_options needsclick">
                 </select>
             </p>
 
@@ -85,7 +85,7 @@
             <section id="player_states" class="horizontal_spacing">
                 <div>
                     <div>
-                        <select id="team_one_players">
+                        <select id="team_one_players" class="needsclick">
                         </select>
                     </div>
                     <div>
@@ -99,7 +99,7 @@
                 </div>
                 <div>
                     <div>
-                        <select id="team_two_players">
+                        <select id="team_two_players" class="needsclick">
                         </select>
                     </div>
                     <div>

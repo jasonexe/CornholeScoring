@@ -68,3 +68,11 @@ option, select, .capitalize {
 #score_state_buttons div:last-child {
     margin-left: 30px;
 }
+
+footer {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    width: 100%;
+    text-align: right;
+  }

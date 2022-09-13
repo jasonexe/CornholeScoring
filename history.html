@@ -1,4 +1,12 @@
 <html>
+<script src="ts_compile/fastclick.js"></script>
+<script lang="js">
+    if ('addEventListener' in document) {
+        document.addEventListener('DOMContentLoaded', function () {
+            FastClick.attach(document.body);
+        }, false);
+    }
+</script>
 <script src="ts_compile/historical_game_display.js"></script>
 <script src="ts_compile/window_management.js"></script>
 <script src="ts_compile/scoring.js"></script>
@@ -13,7 +21,7 @@
 <body onload="displayPastGamesSummary()">
     <section class="main">
         <a href="index.html"><button>Back to home</button></a>
-        <section id="past_game_summaries" style="width:250%">
+        <section id="past_game_summaries" style="width:150%">
             <a href="game_summary.html?gameId=1663033032881" class="no_style">
                 <section class="bordered_section">
                     <section class="horizontal_spacing">

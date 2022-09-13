@@ -1,4 +1,12 @@
 <html>
+<script src="ts_compile/fastclick.js"></script>
+<script lang="js">
+    if ('addEventListener' in document) {
+        document.addEventListener('DOMContentLoaded', function () {
+            FastClick.attach(document.body);
+        }, false);
+    }
+</script>
 <script src="ts_compile/window_management.js"></script>
 <script src="ts_compile/historical_game_display.js"></script>
 <script src="ts_compile/scoring.js"></script>
@@ -36,11 +44,11 @@
             </section>
             <hr />
             <section id="button_options" class="horizontal_spacing">
-                <button onclick="displayFrames()" class="capitalize">Frames</button>
+                <!-- <button onclick="displayFrames()" class="capitalize">Frames</button>
                 <button onclick="displayPlayerPerformance('jason');" class="capitalize">jason</button>
                 <button onclick="displayPlayerPerformance('nikki');" class="capitalize">Nikki</button>
                 <button onclick="displayPlayerPerformance('zzplayer3');" class="capitalize">Zzplayer3</button>
-                <button onclick="displayPlayerPerformance('zzplayer4');" class="capitalize">Zzplayer4</button>
+                <button onclick="displayPlayerPerformance('zzplayer4');" class="capitalize">Zzplayer4</button> -->
             </section>
             <hr />
             <section id="past_frames">

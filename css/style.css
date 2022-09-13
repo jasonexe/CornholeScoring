@@ -5,6 +5,11 @@
     justify-items: center;
 }
 
+.no_style {
+    text-decoration: inherit;
+    color: inherit;
+}
+
 #game_screen {
     width: 300%;
 }
@@ -41,6 +46,16 @@ option, select, .capitalize {
     flex-grow: 1;
     border-bottom: 1px solid black;
     margin: 5px
+}
+
+.bordered_section {
+    border: 1px solid black;
+    margin: .3rem;
+    padding: .3rem;
+}
+
+.bold {
+    font-weight: bold;
 }
 
 #score_state_buttons {

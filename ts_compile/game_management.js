@@ -46,7 +46,7 @@ class CornholeGame {
     submitFrame() {
         this.pastFrames.push(this.currentFrame);
         this.currentScore.appendScore(this.currentFrame.getFrameScore());
-        let playerTurn = this.pastFrames.length % 2;
+        let playerTurn = (this.pastFrames.length - 1) % 2;
         this.leftTeam[playerTurn].addFrameToGame(this.id, new IndividualFrame(this.currentFrame, TeamSide.LEFT));
         this.rightTeam[playerTurn].addFrameToGame(this.id, new IndividualFrame(this.currentFrame, TeamSide.RIGHT));
         this.currentFrame = new CornholeFrame(this.pastFrames.length, this.numberOfBags);
@@ -104,7 +104,7 @@ let updateScoreDisplay = function () {
     // Updates the number of each bag type
     updatePlayerBagStatusDisplay(currentFrame);
     updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
-    updatePastFrames();
+    updatePastFrames(game);
 };
 let selectTeams = function () {
     // Read the DOM and do stuff to create a CornholeGame instance.
@@ -163,7 +163,14 @@ let getCurrentGame = function () {
 let getPastGames = function () {
     let pastGames = localStorage.getObject(HISTORICAL_GAMES);
     if (pastGames) {
-        return Array.of(pastGames);
+        return new Map(pastGames);
+    }
+    return null;
+};
+let getPastGame = function (gameId) {
+    let pastGames = localStorage.getObject(HISTORICAL_GAMES);
+    if (pastGames.has(gameId)) {
+        return CornholeGame.fromJson(pastGames.get(gameId));
     }
     return null;
 };
@@ -171,10 +178,10 @@ let storePastGame = function (finishedGame) {
     let pastGames = getPastGames();
     if (!pastGames) {
         // If there's no games already stored, then create a new array.
-        localStorage.setObject(HISTORICAL_GAMES, new Array().push(finishedGame));
+        localStorage.setObject(HISTORICAL_GAMES, new Map().set(finishedGame.id, finishedGame));
         return;
     }
-    pastGames.push(finishedGame);
+    pastGames.set(finishedGame.id, finishedGame);
     localStorage.setObject(HISTORICAL_GAMES, pastGames);
 };
 //# sourceMappingURL=game_management.js.map

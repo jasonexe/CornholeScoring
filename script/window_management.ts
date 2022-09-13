@@ -60,7 +60,7 @@ let displayGameProgress = function (frameNumber: number) {
     let frameNumberDisplay = document.getElementById("frame_number");
     frameNumberDisplay.innerText = frameNumber.toString();
     updateScoreDisplay();
-    updatePastFrames();
+    updatePastFrames(currentGame);
 }
 
 let updateFrameAndCurrentScoreDisplay = function (frameScore: Score, gameScore: Score) {
@@ -76,10 +76,10 @@ let updateFrameAndCurrentScoreDisplay = function (frameScore: Score, gameScore: 
     rightGameScoreDisplay.innerText = gameScore.rightCalculatedScore.toString();
 }
 
-let updatePastFrames = function () {
-    let game = getCurrentGame();
+let updatePastFrames = function (game: CornholeGame) {
     let pastFrameSection = document.getElementById("past_frames");
     pastFrameSection.innerHTML = "";
+    pastFrameSection.style.display = "block";
     let frameScoreObject = new Score();
     for (let pastFrameIndex in game.pastFrames) {
         let pastFrame = game.pastFrames[pastFrameIndex];
@@ -189,6 +189,15 @@ let createHeader3WithText = function (text: string) {
     let headerElement = document.createElement("h3");
     headerElement.innerText = text;
     return headerElement;
+}
+
+let createDivWithText = function (text: string, bold: boolean) {
+    let divElement = document.createElement("div");
+    divElement.innerText = text;
+    if (bold) {
+        divElement.className = "bold";
+    }
+    return divElement;
 }
 
 // Always switches to the unselected one, regardless of what frame we're on

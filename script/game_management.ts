@@ -32,11 +32,11 @@ class CornholeGame {
     // Constructs the whole class given a base from JSON parsing
     static fromJson(baseGame: CornholeGame): CornholeGame {
         let leftPlayers = new Array<CornholePlayer>();
-        for(let leftPlayer of baseGame.leftTeam) {
+        for (let leftPlayer of baseGame.leftTeam) {
             leftPlayers.push(CornholePlayer.fromJson(leftPlayer));
         }
         let rightPlayers = new Array<CornholePlayer>();
-        for(let rightPlayer of baseGame.rightTeam) {
+        for (let rightPlayer of baseGame.rightTeam) {
             rightPlayers.push(CornholePlayer.fromJson(rightPlayer));
         }
         let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers);
@@ -55,8 +55,8 @@ class CornholeGame {
     submitFrame() {
         this.pastFrames.push(this.currentFrame);
         this.currentScore.appendScore(this.currentFrame.getFrameScore());
-        let playerTurn = this.pastFrames.length % 2;
-        
+        let playerTurn = (this.pastFrames.length - 1) % 2;
+
         this.leftTeam[playerTurn].addFrameToGame(this.id, new IndividualFrame(this.currentFrame, TeamSide.LEFT));
         this.rightTeam[playerTurn].addFrameToGame(this.id, new IndividualFrame(this.currentFrame, TeamSide.RIGHT));
 
@@ -104,7 +104,7 @@ let subtractThrow = function (bagStatus: BagStatus, teamSide: TeamSide) {
     currentGame.subtractThrow(bagStatus, teamSide);
 }
 
-let submitFrame = function() {
+let submitFrame = function () {
     getCurrentGame().submitFrame();
 }
 
@@ -121,9 +121,9 @@ let updateScoreDisplay = function () {
     rightPlayerRawScoreElement.innerText = frameScore.rightRawScore.toString();
     // Updates the number of each bag type
     updatePlayerBagStatusDisplay(currentFrame);
-    
+
     updateFrameAndCurrentScoreDisplay(frameScore, gameScore);
-    updatePastFrames();
+    updatePastFrames(game);
 }
 
 let selectTeams = function () {
@@ -138,7 +138,7 @@ let selectTeams = function () {
 // Updates UI to the "game" screen and initializes the CornholeGame, storing it in LocalStorage
 let startGame = function () {
     // Read the DOM and do stuff to create a CornholeGame instance.
-    let teamOnePlayerOneName = 
+    let teamOnePlayerOneName =
         (<HTMLSelectElement>document.getElementById("team_one_player_one"))
             .selectedOptions[0]
             .value;
@@ -146,8 +146,8 @@ let startGame = function () {
         (<HTMLSelectElement>document.getElementById("team_one_player_two"))
             .selectedOptions[0]
             .value;
-    
-    let teamTwoPlayerOneName = 
+
+    let teamTwoPlayerOneName =
         (<HTMLSelectElement>document.getElementById("team_two_player_one"))
             .selectedOptions[0]
             .value;
@@ -186,36 +186,44 @@ let endGame = function () {
     startGameScreen.style.display = "block";
 }
 
-let storeCurrentGame = function(currentGame: CornholeGame) {
+let storeCurrentGame = function (currentGame: CornholeGame) {
     localStorage.setObject(CURRENT_GAME, currentGame);
 }
 
-let clearCurrentGame = function() {
+let clearCurrentGame = function () {
     localStorage.removeItem(CURRENT_GAME);
 }
 
-let getCurrentGame = function() : CornholeGame {
+let getCurrentGame = function (): CornholeGame {
     if (!localStorage.getObject(CURRENT_GAME)) {
         return null;
     }
     return CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME));
 }
 
-let getPastGames = function() : Array<CornholeGame> {
+let getPastGames = function (): Map<number, CornholeGame> {
     let pastGames = localStorage.getObject(HISTORICAL_GAMES);
     if (pastGames) {
-        return Array.of(pastGames);
+        return new Map(pastGames);
     }
     return null;
 }
 
-let storePastGame = function(finishedGame: CornholeGame) {
+let getPastGame = function (gameId: number): CornholeGame {
+    let pastGames = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES);
+    if (pastGames.has(gameId)) {
+        return CornholeGame.fromJson(pastGames.get(gameId));
+    }
+    return null;
+}
+
+let storePastGame = function (finishedGame: CornholeGame) {
     let pastGames = getPastGames();
     if (!pastGames) {
         // If there's no games already stored, then create a new array.
-        localStorage.setObject(HISTORICAL_GAMES, new Array<CornholeGame>().push(finishedGame));
+        localStorage.setObject(HISTORICAL_GAMES, new Map<number, CornholeGame>().set(finishedGame.id, finishedGame));
         return;
     }
-    pastGames.push(finishedGame);
+    pastGames.set(finishedGame.id, finishedGame);
     localStorage.setObject(HISTORICAL_GAMES, pastGames);
 }

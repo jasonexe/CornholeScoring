@@ -57,7 +57,7 @@ let displayGameProgress = function (frameNumber) {
     let frameNumberDisplay = document.getElementById("frame_number");
     frameNumberDisplay.innerText = frameNumber.toString();
     updateScoreDisplay();
-    updatePastFrames();
+    updatePastFrames(currentGame);
 };
 let updateFrameAndCurrentScoreDisplay = function (frameScore, gameScore) {
     let leftFrameScoreDisplay = document.getElementById("left_frame_score");
@@ -69,10 +69,10 @@ let updateFrameAndCurrentScoreDisplay = function (frameScore, gameScore) {
     leftGameScoreDisplay.innerText = gameScore.leftCalculatedScore.toString();
     rightGameScoreDisplay.innerText = gameScore.rightCalculatedScore.toString();
 };
-let updatePastFrames = function () {
-    let game = getCurrentGame();
+let updatePastFrames = function (game) {
     let pastFrameSection = document.getElementById("past_frames");
     pastFrameSection.innerHTML = "";
+    pastFrameSection.style.display = "block";
     let frameScoreObject = new Score();
     for (let pastFrameIndex in game.pastFrames) {
         let pastFrame = game.pastFrames[pastFrameIndex];
@@ -175,6 +175,14 @@ let createHeader3WithText = function (text) {
     let headerElement = document.createElement("h3");
     headerElement.innerText = text;
     return headerElement;
+};
+let createDivWithText = function (text, bold) {
+    let divElement = document.createElement("div");
+    divElement.innerText = text;
+    if (bold) {
+        divElement.className = "bold";
+    }
+    return divElement;
 };
 // Always switches to the unselected one, regardless of what frame we're on
 let updateCurrentThrower = function () {

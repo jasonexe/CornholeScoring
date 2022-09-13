@@ -1,0 +1,94 @@
+<html>
+<script src="ts_compile/window_management.js"></script>
+<script src="ts_compile/historical_game_display.js"></script>
+<script src="ts_compile/scoring.js"></script>
+<script src="ts_compile/game_management.js"></script>
+<script src="ts_compile/player_management.js"></script>
+<script src="ts_compile/map_util.js"></script>
+<script src="ts_compile/storage_util.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+<link href="css/style.css" rel="stylesheet" />
+
+<body onload="displayGameInUrl()">
+    <section class="main">
+        <section class="horizontal_spacing">
+            <a href="index.html">
+                <button>Back to home</button>
+            </a>
+            <span class="divider"></span>
+            <a href="history.html">
+                <button>Back to game history</button>
+            </a>
+        </section>
+        <section style="width:130%">
+            <section class="horizontal_spacing">
+                <div>
+                    <h2>Team One</h2>
+                </div>
+                <div>
+                    <h2>Team Two</h2>
+                </div>
+            </section>
+            <section class="horizontal_spacing">
+                <h1>21</h1>
+                <h1>3</h1>
+            </section>
+            <hr />
+            <section id="button_options" class="horizontal_spacing">
+                <button onclick="displayFrames()" class="capitalize">Frames</button>
+                <button onclick="displayPlayerPerformance('jason');" class="capitalize">jason</button>
+                <button onclick="displayPlayerPerformance('nikki');" class="capitalize">Nikki</button>
+                <button onclick="displayPlayerPerformance('zzplayer3');" class="capitalize">Zzplayer3</button>
+                <button onclick="displayPlayerPerformance('zzplayer4');" class="capitalize">Zzplayer4</button>
+            </section>
+            <hr />
+            <section id="past_frames">
+                <!-- <div class="horizontal_spacing">
+                    <h3 class="capitalize">jason</h3><span class="divider"></span>
+                    <h3>Player</h3><span class="divider"></span>
+                    <h3 class="capitalize">zzplayer4</h3>
+                </div>
+                <div class="horizontal_spacing">
+                    <h3>5</h3><span class="divider"></span>
+                    <h3>Total Score</h3><span class="divider"></span>
+                    <h3>0</h3>
+                </div>
+                <div class="horizontal_spacing">
+                    <h3>1</h3><span class="divider"></span>
+                    <h3>Frame Score</h3><span class="divider"></span>
+                    <h3>0</h3>
+                </div>
+                <div class="horizontal_spacing">
+                    <h3>1</h3><span class="divider"></span>
+                    <h3>Boards</h3><span class="divider"></span>
+                    <h3>0</h3>
+                </div>
+                <div class="horizontal_spacing">
+                    <h3>0</h3><span class="divider"></span>
+                    <h3>Holes</h3><span class="divider"></span>
+                    <h3>0</h3>
+                </div>
+                <hr>
+                <div class="horizontal_spacing"></div> -->
+            </section>
+            <section id="player_performance" style="display: none">
+                <h3>Percentages</h3>
+                <section class="horizontal_spacing">
+                    <div>Total</div>
+                    <div>Holes</div>
+                    <div>Boards</div>
+                </section>
+                <section class="horizontal_spacing">
+                    <div class="bold">40%</div>
+                    <div class="bold">10%</div>
+                    <div class="bold">30%</div>
+                </section>
+                <hr />
+                <h3>Count</h3>
+            </section>
+        </section>
+    </section>
+</body>
+
+</html>

@@ -32,6 +32,7 @@ let displayPastGamesSummary = function () {
 };
 // Stored as a global variable so we don't need to keep getting it
 let pastGame;
+let playerNames = new Array();
 let displayGameInUrl = function () {
     pastGame = getPastGame(getGameIdFromUrl());
     updatePastFrames(pastGame);
@@ -43,21 +44,29 @@ let displayGameInUrl = function () {
     let firstPlayerName = pastGame.leftTeam[0].name;
     firstPlayerButton.className = "capitalize";
     firstPlayerButton.innerText = firstPlayerName;
+    firstPlayerButton.id = firstPlayerName;
+    playerNames.push(firstPlayerName);
     firstPlayerButton.onclick = function () { displayPlayerPerformance(firstPlayerName); };
     let secondPlayerButton = document.createElement("button");
     let secondPlayerName = pastGame.leftTeam[1].name;
     secondPlayerButton.className = "capitalize";
     secondPlayerButton.innerText = secondPlayerName;
+    secondPlayerButton.id = secondPlayerName;
+    playerNames.push(secondPlayerName);
     secondPlayerButton.onclick = function () { displayPlayerPerformance(secondPlayerName); };
     let thirdPlayerButton = document.createElement("button");
     let thirdPlayerName = pastGame.rightTeam[0].name;
     thirdPlayerButton.className = "capitalize";
     thirdPlayerButton.innerText = thirdPlayerName;
+    thirdPlayerButton.id = thirdPlayerName;
+    playerNames.push(thirdPlayerName);
     thirdPlayerButton.onclick = function () { displayPlayerPerformance(thirdPlayerName); };
     let fourthPlayerButton = document.createElement("button");
     let fourthPlayerName = pastGame.rightTeam[1].name;
     fourthPlayerButton.className = "capitalize";
     fourthPlayerButton.innerText = fourthPlayerName;
+    fourthPlayerButton.id = fourthPlayerName;
+    playerNames.push(fourthPlayerName);
     fourthPlayerButton.onclick = function () { displayPlayerPerformance(fourthPlayerName); };
     buttonSection.append(frameButton);
     buttonSection.append(firstPlayerButton);
@@ -76,6 +85,14 @@ let displayFrames = function () {
     playerPerformanceSection.style.display = "none";
 };
 let displayPlayerPerformance = function (playerName) {
+    for (let playerButtonId of playerNames) {
+        if (playerButtonId === playerName) {
+            document.getElementById(playerButtonId).style.backgroundColor = "lightgreen";
+        }
+        else {
+            document.getElementById(playerButtonId).style.backgroundColor = "buttonface";
+        }
+    }
     let pastFrameSection = document.getElementById("past_frames");
     pastFrameSection.style.display = "none";
     let playerPerformanceSection = document.getElementById("player_performance");

@@ -36,9 +36,15 @@ let playerNames = new Array();
 let displayGameInUrl = function () {
     pastGame = getPastGame(getGameIdFromUrl());
     updatePastFrames(pastGame);
+    let leftFinalScoreDisplay = document.getElementById("left_final_score");
+    let rightFinalScoreDisplay = document.getElementById("right_final_score");
+    leftFinalScoreDisplay.innerText = pastGame.currentScore.leftCalculatedScore.toString();
+    rightFinalScoreDisplay.innerText = pastGame.currentScore.rightCalculatedScore.toString();
     let buttonSection = document.getElementById("button_options");
     let frameButton = document.createElement("button");
+    frameButton.id = "frame_button";
     frameButton.innerText = "Frames";
+    frameButton.style.backgroundColor = "lightgreen";
     frameButton.onclick = displayFrames;
     let firstPlayerButton = document.createElement("button");
     let firstPlayerName = pastGame.leftTeam[0].name;
@@ -83,8 +89,13 @@ let displayFrames = function () {
     pastFrameSection.style.display = "block";
     let playerPerformanceSection = document.getElementById("player_performance");
     playerPerformanceSection.style.display = "none";
+    for (let playerButtonId of playerNames) {
+        document.getElementById(playerButtonId).style.backgroundColor = "buttonface";
+    }
+    document.getElementById("frame_button").style.backgroundColor = "lightgreen";
 };
 let displayPlayerPerformance = function (playerName) {
+    document.getElementById("frame_button").style.backgroundColor = "buttonface";
     for (let playerButtonId of playerNames) {
         if (playerButtonId === playerName) {
             document.getElementById(playerButtonId).style.backgroundColor = "lightgreen";

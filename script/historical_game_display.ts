@@ -1,7 +1,7 @@
 // This method might be more appropriate in a new file, but I'm lazy
 // so just going to put it here. It initializes history.html. All the other
 // methods in this file manage game_summary.html
-let displayPastGamesSummary = function() {
+let displayPastGamesSummary = function () {
     let mainSection = document.getElementById("past_game_summaries");
     mainSection.innerText = "";
     for (let pastGame of getPastGames()) {
@@ -42,9 +42,16 @@ let displayGameInUrl = function () {
     pastGame = getPastGame(getGameIdFromUrl());
     updatePastFrames(pastGame);
 
+    let leftFinalScoreDisplay = document.getElementById("left_final_score");
+    let rightFinalScoreDisplay = document.getElementById("right_final_score");
+    leftFinalScoreDisplay.innerText = pastGame.currentScore.leftCalculatedScore.toString();
+    rightFinalScoreDisplay.innerText = pastGame.currentScore.rightCalculatedScore.toString();
+
     let buttonSection = document.getElementById("button_options");
     let frameButton = document.createElement("button");
+    frameButton.id = "frame_button";
     frameButton.innerText = "Frames";
+    frameButton.style.backgroundColor = "lightgreen";
     frameButton.onclick = displayFrames;
 
     let firstPlayerButton = document.createElement("button");
@@ -53,7 +60,7 @@ let displayGameInUrl = function () {
     firstPlayerButton.innerText = firstPlayerName;
     firstPlayerButton.id = firstPlayerName;
     playerNames.push(firstPlayerName);
-    firstPlayerButton.onclick = function() {displayPlayerPerformance(firstPlayerName)};
+    firstPlayerButton.onclick = function () { displayPlayerPerformance(firstPlayerName) };
 
     let secondPlayerButton = document.createElement("button");
     let secondPlayerName = pastGame.leftTeam[1].name;
@@ -61,7 +68,7 @@ let displayGameInUrl = function () {
     secondPlayerButton.innerText = secondPlayerName;
     secondPlayerButton.id = secondPlayerName;
     playerNames.push(secondPlayerName);
-    secondPlayerButton.onclick = function() {displayPlayerPerformance(secondPlayerName)};
+    secondPlayerButton.onclick = function () { displayPlayerPerformance(secondPlayerName) };
 
     let thirdPlayerButton = document.createElement("button");
     let thirdPlayerName = pastGame.rightTeam[0].name;
@@ -69,7 +76,7 @@ let displayGameInUrl = function () {
     thirdPlayerButton.innerText = thirdPlayerName;
     thirdPlayerButton.id = thirdPlayerName;
     playerNames.push(thirdPlayerName);
-    thirdPlayerButton.onclick = function() {displayPlayerPerformance(thirdPlayerName)};
+    thirdPlayerButton.onclick = function () { displayPlayerPerformance(thirdPlayerName) };
 
     let fourthPlayerButton = document.createElement("button");
     let fourthPlayerName = pastGame.rightTeam[1].name;
@@ -77,7 +84,7 @@ let displayGameInUrl = function () {
     fourthPlayerButton.innerText = fourthPlayerName;
     fourthPlayerButton.id = fourthPlayerName;
     playerNames.push(fourthPlayerName);
-    fourthPlayerButton.onclick = function() {displayPlayerPerformance(fourthPlayerName)};
+    fourthPlayerButton.onclick = function () { displayPlayerPerformance(fourthPlayerName) };
 
     buttonSection.append(frameButton);
     buttonSection.append(firstPlayerButton);
@@ -97,9 +104,15 @@ let displayFrames = function () {
 
     let playerPerformanceSection = document.getElementById("player_performance");
     playerPerformanceSection.style.display = "none";
+
+    for (let playerButtonId of playerNames) {
+        document.getElementById(playerButtonId).style.backgroundColor = "buttonface";
+    }
+    document.getElementById("frame_button").style.backgroundColor = "lightgreen";
 }
 
 let displayPlayerPerformance = function (playerName: string) {
+    document.getElementById("frame_button").style.backgroundColor = "buttonface";
     for (let playerButtonId of playerNames) {
         if (playerButtonId === playerName) {
             document.getElementById(playerButtonId).style.backgroundColor = "lightgreen";

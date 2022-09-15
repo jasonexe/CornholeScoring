@@ -1,5 +1,8 @@
 <html>
 <script src="ts_compile/fastclick.js"></script>
+<script src="ts_compile/JSONC.js"></script>
+<script src="ts_compile/json_crush.js"></script>
+<script src="ts_compile/msgpack.js"></script>
 <script lang="js">
     if ('addEventListener' in document) {
         document.addEventListener('DOMContentLoaded', function () {
@@ -27,6 +30,10 @@
             <span class="divider"></span>
             <a href="history.html">
                 <button>Back to game history</button>
+            </a>
+            <span class="divider"></span>
+            <a>
+                <button onclick="generateSharingUrl()">Share this game</button>
             </a>
         </section>
         <section style="width:130%">

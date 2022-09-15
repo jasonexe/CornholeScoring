@@ -35,6 +35,10 @@ class CornholePlayer {
 }
 let updatePlayerData = function (player) {
     let allPlayers = localStorage.getObject(PLAYER_KEY);
+    if (!allPlayers) {
+        // If allPlayers is null, just skip
+        return;
+    }
     allPlayers.set(player.name, player);
     localStorage.setObject(PLAYER_KEY, allPlayers);
 };

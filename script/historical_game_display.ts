@@ -1,5 +1,6 @@
 // This method might be more appropriate in a new file, but I'm lazy
 // so just going to put it here. It initializes history.html. All the other
+
 // methods in this file manage game_summary.html
 let displayPastGamesSummary = function () {
     let mainSection = document.getElementById("past_game_summaries");
@@ -35,11 +36,24 @@ let displayPastGamesSummary = function () {
     }
 }
 
+let generateSharingUrl = function () {
+    let crushedGameData = crush(JSON.stringify(pastGame, replacer));
+    let playerGameData = new Map<string, IndividualFrame[]>();
+    for (let playerName of playerNames) {
+        playerGameData.set(playerName, getPlayer(playerName).games.get(pastGame.id));
+    }
+    let crushedPlayerFrames = crush(JSON.stringify(playerGameData, replacer));
+    navigator.clipboard.writeText("scorehole.com/game_summary.html?gameData=" + crushedGameData + "&playerData=" + crushedPlayerFrames);
+    alert("URL copied to clipboard");
+}
+
 // Stored as a global variable so we don't need to keep getting it
 let pastGame: CornholeGame;
 let playerNames: Array<string> = new Array<string>();
+// If we're using URL data, this is populated instead of pulling the player from storage.
+let playerGameData: Map<string, IndividualFrame[]>;
 let displayGameInUrl = function () {
-    pastGame = getPastGame(getGameIdFromUrl());
+    pastGame = getGameFromUrl();
     updatePastFrames(pastGame);
 
     let leftFinalScoreDisplay = document.getElementById("left_final_score");
@@ -93,9 +107,14 @@ let displayGameInUrl = function () {
     buttonSection.append(fourthPlayerButton);
 }
 
-let getGameIdFromUrl = function (): number {
+let getGameFromUrl = function (): CornholeGame {
     const urlParams = new URLSearchParams(window.location.search);
-    return parseInt(urlParams.get("gameId"))
+    if (urlParams.has("gameId")) {
+        return getPastGame(parseInt(urlParams.get("gameId")));
+    } else if (urlParams.has("gameData")) {
+        playerGameData = JSON.parse(uncrush(urlParams.get("playerData")), reviver);
+        return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver));
+    }
 }
 
 let displayFrames = function () {
@@ -126,8 +145,13 @@ let displayPlayerPerformance = function (playerName: string) {
     let playerPerformanceSection = document.getElementById("player_performance");
     playerPerformanceSection.style.display = "block";
 
-    let playerData = getPlayer(playerName);
-    let playerFrames = playerData.games.get(getGameIdFromUrl());
+    let playerFrames;
+    if (playerGameData) {
+        playerFrames = playerGameData.get(playerName);
+    } else {
+        let playerData = getPlayer(playerName);
+        playerFrames = playerData.games.get(pastGame.id);
+    }
 
     let totalBagsThrown = 0;
     let totalHoles = 0;
@@ -182,7 +206,6 @@ let displayPlayerPerformance = function (playerName: string) {
 
 
     playerPerformanceSection.append(document.createElement("hr"));
-    console.log(playerFrames);
 }
 
 let getSectionLabels = function (includeThrown: boolean) {

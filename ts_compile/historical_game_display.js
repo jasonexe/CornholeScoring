@@ -30,11 +30,23 @@ let displayPastGamesSummary = function () {
         mainSection.prepend(encapsulatingLink);
     }
 };
+let generateSharingUrl = function () {
+    let crushedGameData = crush(JSON.stringify(pastGame, replacer));
+    let playerGameData = new Map();
+    for (let playerName of playerNames) {
+        playerGameData.set(playerName, getPlayer(playerName).games.get(pastGame.id));
+    }
+    let crushedPlayerFrames = crush(JSON.stringify(playerGameData, replacer));
+    navigator.clipboard.writeText("scorehole.com/game_summary.html?gameData=" + crushedGameData + "&playerData=" + crushedPlayerFrames);
+    alert("URL copied to clipboard");
+};
 // Stored as a global variable so we don't need to keep getting it
 let pastGame;
 let playerNames = new Array();
+// If we're using URL data, this is populated instead of pulling the player from storage.
+let playerGameData;
 let displayGameInUrl = function () {
-    pastGame = getPastGame(getGameIdFromUrl());
+    pastGame = getGameFromUrl();
     updatePastFrames(pastGame);
     let leftFinalScoreDisplay = document.getElementById("left_final_score");
     let rightFinalScoreDisplay = document.getElementById("right_final_score");
@@ -80,9 +92,15 @@ let displayGameInUrl = function () {
     buttonSection.append(thirdPlayerButton);
     buttonSection.append(fourthPlayerButton);
 };
-let getGameIdFromUrl = function () {
+let getGameFromUrl = function () {
     const urlParams = new URLSearchParams(window.location.search);
-    return parseInt(urlParams.get("gameId"));
+    if (urlParams.has("gameId")) {
+        return getPastGame(parseInt(urlParams.get("gameId")));
+    }
+    else if (urlParams.has("gameData")) {
+        playerGameData = JSON.parse(uncrush(urlParams.get("playerData")), reviver);
+        return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver));
+    }
 };
 let displayFrames = function () {
     let pastFrameSection = document.getElementById("past_frames");
@@ -108,8 +126,14 @@ let displayPlayerPerformance = function (playerName) {
     pastFrameSection.style.display = "none";
     let playerPerformanceSection = document.getElementById("player_performance");
     playerPerformanceSection.style.display = "block";
-    let playerData = getPlayer(playerName);
-    let playerFrames = playerData.games.get(getGameIdFromUrl());
+    let playerFrames;
+    if (playerGameData) {
+        playerFrames = playerGameData.get(playerName);
+    }
+    else {
+        let playerData = getPlayer(playerName);
+        playerFrames = playerData.games.get(pastGame.id);
+    }
     let totalBagsThrown = 0;
     let totalHoles = 0;
     let totalBoards = 0;
@@ -150,7 +174,6 @@ let displayPlayerPerformance = function (playerName) {
         totalBoards], false));
     playerPerformanceSection.append(document.createElement("hr"));
     playerPerformanceSection.append(document.createElement("hr"));
-    console.log(playerFrames);
 };
 let getSectionLabels = function (includeThrown) {
     let sectionLabels = document.createElement("section");

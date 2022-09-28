@@ -37,12 +37,12 @@ let displayPastGamesSummary = function () {
 }
 
 let generateSharingUrl = function () {
-    let crushedGameData = crush(JSON.stringify(pastGame, replacer));
+    let crushedGameData = encodeURIComponent(crush(JSON.stringify(pastGame, replacer)));
     let playerGameData = new Map<string, IndividualFrame[]>();
     for (let playerName of playerNames) {
         playerGameData.set(playerName, getPlayer(playerName).games.get(pastGame.id));
     }
-    let crushedPlayerFrames = crush(JSON.stringify(playerGameData, replacer));
+    let crushedPlayerFrames = encodeURIComponent(crush(JSON.stringify(playerGameData, replacer)));
     navigator.clipboard.writeText("scorehole.com/game_summary.html?gameData=" + crushedGameData + "&playerData=" + crushedPlayerFrames);
     alert("URL copied to clipboard");
 }

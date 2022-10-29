@@ -66,6 +66,9 @@ const updatePlayerSelectionList = function () {
     let removalPlayerSelector = <HTMLSelectElement>document.getElementById("player_to_remove");
     removalPlayerSelector.innerHTML = "";
     for (let playerData of sortedPlayers) {
+        if (playerData[1].archived) {
+            continue;
+        }
         let option = new Option(playerData[0], playerData[0]);
         option.textContent = playerData[0];
         removalPlayerSelector.add(option);

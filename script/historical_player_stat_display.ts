@@ -1,12 +1,13 @@
 let setupPlayerHistoryPage = function () {
-    let mainContainer = document.getElementById("main_player_history_container");
+    let unarchivedContainer = document.getElementById("non_archived_player_history_container");
+    let archivedContainer = document.getElementById("archived_player_history_container");
     for (let player of getPlayers()) {
         if (player[1].games.size === 0) {
             continue;
         }
         let playerSection = document.createElement("section");
         playerSection.className = "player_stat";
-        playerSection.style.width = "200%";
+        // playerSection.style.width = "200%";
         let nameTitle = createHeader3WithText(player[1].name);
         nameTitle.classList.add("capitalize", "center_text");
         playerSection.append(nameTitle);
@@ -55,6 +56,24 @@ let setupPlayerHistoryPage = function () {
         
         playerSection.append(document.createElement("hr"));
 
-        mainContainer.append(playerSection);
+        if(player[1].archived) {
+            archivedContainer.append(playerSection);
+        } else {
+            unarchivedContainer.append(playerSection);
+        }
     }
+}
+
+let displayArchivedPlayers = false;
+let toggleArchiveDisplay = function() {
+    let unarchivedContainer = document.getElementById("non_archived_player_history_container");
+    let archivedContainer = document.getElementById("archived_player_history_container");
+    if (displayArchivedPlayers) {
+        unarchivedContainer.style.display = "block";
+        archivedContainer.style.display = "none";
+    } else {
+        unarchivedContainer.style.display = "none";
+        archivedContainer.style.display = "block";
+    }
+    displayArchivedPlayers = !displayArchivedPlayers;
 }

@@ -214,7 +214,7 @@ let createHeader3WithText = function (text) {
 };
 let createDivWithText = function (text, bold) {
     let divElement = document.createElement("div");
-    divElement.innerText = text;
+    divElement.innerHTML = text;
     if (bold) {
         divElement.className = "bold";
     }

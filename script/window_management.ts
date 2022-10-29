@@ -232,7 +232,7 @@ let createHeader3WithText = function (text: string) {
 
 let createDivWithText = function (text: string, bold: boolean) {
     let divElement = document.createElement("div");
-    divElement.innerText = text;
+    divElement.innerHTML = text;
     if (bold) {
         divElement.className = "bold";
     }

@@ -145,7 +145,7 @@ let displayPlayerPerformance = function (playerName: string) {
     let playerPerformanceSection = document.getElementById("player_performance");
     playerPerformanceSection.style.display = "block";
 
-    let playerFrames;
+    let playerFrames: IndividualFrame[];
     if (playerGameData) {
         playerFrames = playerGameData.get(playerName);
     } else {
@@ -170,7 +170,7 @@ let displayPlayerPerformance = function (playerName: string) {
     playerPerformanceSection.innerText = "";
     let percentageHeader = createHeader3WithText("Percentages");
     playerPerformanceSection.append(percentageHeader);
-    playerPerformanceSection.append(getSectionLabels(/* includeThrown= */ false));
+    playerPerformanceSection.append(getSectionLabels());
 
     let totalPercentPoints = Math.round(((totalHoles + totalBoards) / totalBagsThrown) * 100);
     let totalPercentHoles = Math.round((totalHoles / totalBagsThrown) * 100);
@@ -184,7 +184,7 @@ let displayPlayerPerformance = function (playerName: string) {
     playerPerformanceSection.append(document.createElement("hr"));
 
     playerPerformanceSection.append(createHeader3WithText("Count"));
-    playerPerformanceSection.append(getSectionLabels(/* includeThrown= */ true));
+    playerPerformanceSection.append(getSectionLabels(EXTRA_SECTIONS.THROWN));
     playerPerformanceSection.append(
         getNumberSection(
             [totalHoles + totalBoards,
@@ -195,11 +195,13 @@ let displayPlayerPerformance = function (playerName: string) {
     playerPerformanceSection.append(document.createElement("hr"));
 
     playerPerformanceSection.append(createHeader3WithText("Score"));
-    playerPerformanceSection.append(getSectionLabels(/* includeThrown= */ false));
+    playerPerformanceSection.append(getSectionLabels(EXTRA_SECTIONS.AVERAGE_PER_FRAME));
     playerPerformanceSection.append(
         getNumberSection(
-            [(totalHoles * 3) + totalBoards,
-            totalHoles * 3,
+            [
+                (totalHoles * 3) + totalBoards,
+                ((totalHoles * 3) + totalBoards)/playerFrames.length,
+                totalHoles * 3,
                 totalBoards],
             false));
     playerPerformanceSection.append(document.createElement("hr"));
@@ -208,13 +210,23 @@ let displayPlayerPerformance = function (playerName: string) {
     playerPerformanceSection.append(document.createElement("hr"));
 }
 
-let getSectionLabels = function (includeThrown: boolean) {
+enum EXTRA_SECTIONS {
+    // THROWN will be included as the last label
+    THROWN,
+    // AVERAGE PER FRAME is included as the second label
+    AVERAGE_PER_FRAME
+}
+
+let getSectionLabels = function (...extraSections : EXTRA_SECTIONS[]) {
     let sectionLabels = document.createElement("section");
     sectionLabels.className = "horizontal_spacing";
     sectionLabels.append(createDivWithText("Total", /* bold= */ false));
+    if (extraSections.includes(EXTRA_SECTIONS.AVERAGE_PER_FRAME)) {
+        sectionLabels.append(createDivWithText("Avg/Frame", /* bold= */ false));
+    }
     sectionLabels.append(createDivWithText("Holes", /* bold= */ false));
     sectionLabels.append(createDivWithText("Boards", /* bold= */ false));
-    if (includeThrown) {
+    if (extraSections.includes(EXTRA_SECTIONS.THROWN)) {
         sectionLabels.append(createDivWithText("Thrown", /* bold= */ false));
     }
     return sectionLabels;
@@ -225,7 +237,7 @@ let getNumberSection = function (numbers: number[], includePercentage: boolean) 
     numberSection.className = "horizontal_spacing";
     for (let number of numbers) {
         let display = createDivWithText(
-            number.toString() + (includePercentage ? "%" : ""),
+            (Math.round((number + Number.EPSILON) * 100) / 100).toString() + (includePercentage ? "%" : ""),
             /* bold= */ true);
         numberSection.append(display);
     }

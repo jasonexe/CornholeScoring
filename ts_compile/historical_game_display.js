@@ -151,7 +151,7 @@ let displayPlayerPerformance = function (playerName) {
     playerPerformanceSection.innerText = "";
     let percentageHeader = createHeader3WithText("Percentages");
     playerPerformanceSection.append(percentageHeader);
-    playerPerformanceSection.append(getSectionLabels(/* includeThrown= */ false));
+    playerPerformanceSection.append(getSectionLabels());
     let totalPercentPoints = Math.round(((totalHoles + totalBoards) / totalBagsThrown) * 100);
     let totalPercentHoles = Math.round((totalHoles / totalBagsThrown) * 100);
     let totalPercentBoards = Math.round((totalBoards / totalBagsThrown) * 100);
@@ -161,27 +161,40 @@ let displayPlayerPerformance = function (playerName) {
     /* includePercentage= */ true));
     playerPerformanceSection.append(document.createElement("hr"));
     playerPerformanceSection.append(createHeader3WithText("Count"));
-    playerPerformanceSection.append(getSectionLabels(/* includeThrown= */ true));
+    playerPerformanceSection.append(getSectionLabels(EXTRA_SECTIONS.THROWN));
     playerPerformanceSection.append(getNumberSection([totalHoles + totalBoards,
         totalHoles,
         totalBoards,
         totalBagsThrown], false));
     playerPerformanceSection.append(document.createElement("hr"));
     playerPerformanceSection.append(createHeader3WithText("Score"));
-    playerPerformanceSection.append(getSectionLabels(/* includeThrown= */ false));
-    playerPerformanceSection.append(getNumberSection([(totalHoles * 3) + totalBoards,
+    playerPerformanceSection.append(getSectionLabels(EXTRA_SECTIONS.AVERAGE_PER_FRAME));
+    playerPerformanceSection.append(getNumberSection([
+        (totalHoles * 3) + totalBoards,
+        ((totalHoles * 3) + totalBoards) / playerFrames.length,
         totalHoles * 3,
-        totalBoards], false));
+        totalBoards
+    ], false));
     playerPerformanceSection.append(document.createElement("hr"));
     playerPerformanceSection.append(document.createElement("hr"));
 };
-let getSectionLabels = function (includeThrown) {
+var EXTRA_SECTIONS;
+(function (EXTRA_SECTIONS) {
+    // THROWN will be included as the last label
+    EXTRA_SECTIONS[EXTRA_SECTIONS["THROWN"] = 0] = "THROWN";
+    // AVERAGE PER FRAME is included as the second label
+    EXTRA_SECTIONS[EXTRA_SECTIONS["AVERAGE_PER_FRAME"] = 1] = "AVERAGE_PER_FRAME";
+})(EXTRA_SECTIONS || (EXTRA_SECTIONS = {}));
+let getSectionLabels = function (...extraSections) {
     let sectionLabels = document.createElement("section");
     sectionLabels.className = "horizontal_spacing";
     sectionLabels.append(createDivWithText("Total", /* bold= */ false));
+    if (extraSections.includes(EXTRA_SECTIONS.AVERAGE_PER_FRAME)) {
+        sectionLabels.append(createDivWithText("Avg/Frame", /* bold= */ false));
+    }
     sectionLabels.append(createDivWithText("Holes", /* bold= */ false));
     sectionLabels.append(createDivWithText("Boards", /* bold= */ false));
-    if (includeThrown) {
+    if (extraSections.includes(EXTRA_SECTIONS.THROWN)) {
         sectionLabels.append(createDivWithText("Thrown", /* bold= */ false));
     }
     return sectionLabels;
@@ -190,7 +203,7 @@ let getNumberSection = function (numbers, includePercentage) {
     let numberSection = document.createElement("section");
     numberSection.className = "horizontal_spacing";
     for (let number of numbers) {
-        let display = createDivWithText(number.toString() + (includePercentage ? "%" : ""), 
+        let display = createDivWithText((Math.round((number + Number.EPSILON) * 100) / 100).toString() + (includePercentage ? "%" : ""), 
         /* bold= */ true);
         numberSection.append(display);
     }

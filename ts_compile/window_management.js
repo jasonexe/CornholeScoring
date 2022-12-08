@@ -22,6 +22,9 @@ const updatePlayerSelectionList = function () {
         castSelector.innerHTML = "";
         let playerNum = 0;
         for (let playerData of sortedPlayers) {
+            if (playerData[1].archived) {
+                continue;
+            }
             let option = new Option(playerData[0], playerData[0]);
             option.textContent = playerData[0];
             castSelector.add(option);

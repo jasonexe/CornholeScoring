@@ -156,13 +156,13 @@
             let rightNameTwo = game.rightTeam[1].name;
             let storedGameId = game.id
                 + SHARING_ID_SEPARATOR
-                + leftNameOne.replace(" ", "-")
+                + leftNameOne.replace(" ", "¯")
                 + SHARING_ID_SEPARATOR
-                + leftNameTwo.replace(" ", "-")
+                + leftNameTwo.replace(" ", "¯")
                 + SHARING_ID_SEPARATOR
-                + rightNameOne.replace(" ", "-")
+                + rightNameOne.replace(" ", "¯")
                 + SHARING_ID_SEPARATOR
-                + rightNameTwo.replace(" ", "-");
+                + rightNameTwo.replace(" ", "¯");
 
             set(ref(database, 'games/' + storedGameId), game);
             // TODO: set players/... for each player + gameId
@@ -183,6 +183,7 @@
                 promises.push(get(child(ref(database), 'games/' + fullGameId)));
                 let gameStartTime = fullGameId.substring(0, fullGameId.indexOf(SHARING_ID_SEPARATOR));
                 for (let playerName of fullGameId.split(SHARING_ID_SEPARATOR).slice(1)) {
+                    playerName = playerName.replace("¯", " ");
                     promises.push(get(child(ref(database), "playerFrames/" + playerName + SHARING_ID_SEPARATOR + gameStartTime)));
                 }
                 Promise.all(promises).then((snapshots) => {

@@ -31,6 +31,22 @@ class CornholePlayer {
         this.games.set(gameId, gameFrameArray);
         this.updateStorage();
     }
+    removeFrameFromGame(gameId, frame) {
+        let gameFrameArray = this.games.get(gameId);
+        if (!gameFrameArray) {
+            // No-op if there's not even a game stored for the customer
+            return;
+        }
+        let lastFrame = gameFrameArray.pop();
+        // To be safe, make sure the last frame is the frame we want to remove. In theory this should never be false.
+        if (lastFrame !== frame) {
+            // If it's not the right one, return early.
+            gameFrameArray.push(lastFrame);
+            return;
+        }
+        this.games.set(gameId, gameFrameArray);
+        this.updateStorage();
+    }
     // Stores any updates to this CornholePlayer in LocalStorage
     updateStorage() {
         updatePlayerData(this);

@@ -21,6 +21,14 @@ class Score {
         return this;
     }
 
+    removeScore(partialScore: Score): Score {
+        this.leftCalculatedScore -= partialScore.leftCalculatedScore;
+        this.rightCalculatedScore -= partialScore.rightCalculatedScore;
+        this.leftRawScore -= partialScore.leftRawScore;
+        this.rightRawScore -= partialScore.rightRawScore;
+        return this;
+    }
+
     static fromJson(jsonScore: Score) {
         let funcScore = new Score();
         funcScore.leftCalculatedScore = jsonScore.leftCalculatedScore;

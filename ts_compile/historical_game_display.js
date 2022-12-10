@@ -48,6 +48,7 @@ let playerGameData;
 let displayGameInUrl = function () {
     pastGame = getGameFromUrl();
     updatePastFrames(pastGame);
+    document.getElementById("game_time").innerText = new Date(pastGame.id).toLocaleString();
     let leftFinalScoreDisplay = document.getElementById("left_final_score");
     let rightFinalScoreDisplay = document.getElementById("right_final_score");
     leftFinalScoreDisplay.innerText = pastGame.currentScore.leftCalculatedScore.toString();

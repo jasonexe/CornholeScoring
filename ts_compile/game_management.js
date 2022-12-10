@@ -64,6 +64,22 @@ class CornholeGame {
             alert("The right team won! Nice Job!");
         }
     }
+    undoLastFrame() {
+        // Undo the last frame
+        if (!confirm("Do you really want to remove the last frame?")) {
+            return;
+        }
+        let lastFrame = this.pastFrames.pop();
+        this.currentScore.removeScore(lastFrame.getFrameScore());
+        let playerTurn = (this.pastFrames.length) % 2;
+        this.leftTeam[playerTurn].removeFrameFromGame(this.id, new IndividualFrame(this.currentFrame, TeamSide.LEFT));
+        this.rightTeam[playerTurn].removeFrameFromGame(this.id, new IndividualFrame(this.currentFrame, TeamSide.RIGHT));
+        this.currentFrame = new CornholeFrame(this.pastFrames.length, this.numberOfBags);
+        updateCurrentThrower();
+        storeCurrentGame(this);
+        updateScoreDisplay(this);
+    }
+    // Returns the current score if the currently-active frame was finished
     getCurrentScore() {
         return new Score().appendScore(this.currentScore).appendScore(this.currentFrame.getFrameScore());
     }
@@ -89,6 +105,9 @@ let subtractThrow = function (bagStatus, teamSide) {
 };
 let submitFrame = function () {
     getCurrentGame().submitFrame();
+};
+let undoLastFrame = function () {
+    getCurrentGame().undoLastFrame();
 };
 // Updates score for the frame, player, and overall score.
 let updateScoreDisplay = function (game) {

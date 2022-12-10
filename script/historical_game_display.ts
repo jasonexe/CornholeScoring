@@ -117,6 +117,7 @@ let getGameFromUrl = function (): CornholeGame {
         playerGameData = JSON.parse(uncrush(urlParams.get("playerData")), reviver);
         return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver));
     } else if (urlParams.has("storedGameId")) {
+        // set playerGameData
         return getPastGame(parseInt(urlParams.get("storedGameId").split(SHARING_ID_SEPARATOR)[0]));
     }
 }
@@ -162,6 +163,10 @@ let displayPlayerPerformance = function (playerName: string) {
     let totalBoards = 0;
     for (let frame of playerFrames) {
         totalBagsThrown += frame.bagsPossible;
+        // When pulling from firebase, score might not be present if no bags were thrown in.
+        if (!frame.score) {
+            continue;
+        }
         for (let status of frame.score) {
             if (status === BagStatus.IN) {
                 totalHoles += 1;

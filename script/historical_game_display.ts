@@ -173,7 +173,8 @@ let displayPlayerPerformance = function (playerName: string) {
     playerPerformanceSection.append(percentageHeader);
     playerPerformanceSection.append(getSectionLabels());
 
-    let totalPercentPoints = Math.round(((totalHoles + totalBoards) / totalBagsThrown) * 100);
+    Math.round(((totalHoles*3 + totalBoards) / (totalBagsThrown * 3)) * 100)
+    let totalPercentPoints = Math.round(((totalHoles * 3 + totalBoards) / (totalBagsThrown * 3)) * 100);
     let totalPercentHoles = Math.round((totalHoles / totalBagsThrown) * 100);
     let totalPercentBoards = Math.round((totalBoards / totalBagsThrown) * 100);
     playerPerformanceSection.append(

@@ -242,6 +242,14 @@ let createDivWithText = function (text: string, bold: boolean) {
     return divElement;
 }
 
+// If bold = true, creates a <th> instead of <td>
+let createTableDataWithText = function (text: string, bold: boolean) {
+    let elementType = bold ? "th" : "td";
+    let columnElement = document.createElement(elementType);
+    columnElement.innerHTML = text;
+    return columnElement;
+}
+
 let createCapitalizedDivWithText = function (text: string, bold: boolean) {
     let divElement = document.createElement("div");
     divElement.innerText = text;

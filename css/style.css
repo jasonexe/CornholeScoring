@@ -77,6 +77,15 @@ footer {
     text-align: right;
 }
 
+table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.player_history_container {
+    padding: 0 1em 0 1em;
+}
+
 * {
     font-size: 110%;
 }

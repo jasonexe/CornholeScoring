@@ -1,3 +1,4 @@
+const SHARING_ID_SEPARATOR = "_";
 // This method might be more appropriate in a new file, but I'm lazy
 // so just going to put it here. It initializes history.html. All the other
 // methods in this file manage game_summary.html
@@ -101,6 +102,9 @@ let getGameFromUrl = function () {
     else if (urlParams.has("gameData")) {
         playerGameData = JSON.parse(uncrush(urlParams.get("playerData")), reviver);
         return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver));
+    }
+    else if (urlParams.has("storedGameId")) {
+        return getPastGame(parseInt(urlParams.get("storedGameId").split(SHARING_ID_SEPARATOR)[0]));
     }
 };
 let displayFrames = function () {

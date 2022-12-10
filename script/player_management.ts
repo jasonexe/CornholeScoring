@@ -66,7 +66,7 @@ class CornholePlayer {
 
     // Constructs the whole class given a base from JSON parsing
     static fromJson(basePlayer: CornholePlayer): CornholePlayer {
-        let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived);
+        let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
         playerWithFunc.games = basePlayer.games;
         return playerWithFunc;
     }

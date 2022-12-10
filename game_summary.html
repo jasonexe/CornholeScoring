@@ -175,6 +175,7 @@
             if (urlParams.has("storedGameId")) {
                 let gameId = urlParams.get("storedGameId");
                 get(child(ref(database), 'games/' + gameId)).then((snapshot) => {
+                    storePastGame(snapshot.val());
                     localStorage.setObject(gameId.split(SHARING_ID_SEPARATOR)[0], snapshot.val());
                     displayGameInUrl();
                 });

@@ -1,12 +1,13 @@
 {
     "compilerOptions": {
-        "module": "CommonJS",
+        // "module": "CommonJS",
         "moduleResolution": "Node",
         "target": "ES6",
         "jsx": "preserve",
         "strictFunctionTypes": true,
         "sourceMap": true,
         "outDir": "ts_compile",
+        "allowJs": true,
         "lib": [
             "dom",
             "es2018"

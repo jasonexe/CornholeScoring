@@ -9,6 +9,7 @@ class CornholePlayer {
     constructor(name: string, archived: boolean) {
         this.name = name;
         this.archived = archived;
+        this.games = new Map<number, Array<IndividualFrame>>();
     }
 
     /**
@@ -67,7 +68,9 @@ class CornholePlayer {
     // Constructs the whole class given a base from JSON parsing
     static fromJson(basePlayer: CornholePlayer): CornholePlayer {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
-        playerWithFunc.games = basePlayer.games;
+        if(basePlayer.games) {
+            playerWithFunc.games = basePlayer.games;
+        }
         return playerWithFunc;
     }
 }

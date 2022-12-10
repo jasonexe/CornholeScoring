@@ -156,13 +156,13 @@
             let rightNameTwo = game.rightTeam[1].name;
             let storedGameId = game.id
                 + SHARING_ID_SEPARATOR
-                + leftNameOne
+                + leftNameOne.replace(" ", "-")
                 + SHARING_ID_SEPARATOR
-                + leftNameTwo
+                + leftNameTwo.replace(" ", "-")
                 + SHARING_ID_SEPARATOR
-                + rightNameOne
+                + rightNameOne.replace(" ", "-")
                 + SHARING_ID_SEPARATOR
-                + rightNameTwo;
+                + rightNameTwo.replace(" ", "-");
 
             set(ref(database, 'games/' + storedGameId), game);
 
@@ -176,7 +176,6 @@
                 let gameId = urlParams.get("storedGameId");
                 get(child(ref(database), 'games/' + gameId)).then((snapshot) => {
                     storePastGame(snapshot.val());
-                    localStorage.setObject(gameId.split(SHARING_ID_SEPARATOR)[0], snapshot.val());
                     displayGameInUrl();
                 });
             } else {

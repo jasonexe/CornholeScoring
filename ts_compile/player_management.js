@@ -4,6 +4,7 @@ class CornholePlayer {
         this.games = new Map();
         this.name = name;
         this.archived = archived;
+        this.games = new Map();
     }
     /**
      * "Archive" the player - this means they'll only show up in the player summary list, but won't be available to choose
@@ -54,7 +55,9 @@ class CornholePlayer {
     // Constructs the whole class given a base from JSON parsing
     static fromJson(basePlayer) {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
-        playerWithFunc.games = basePlayer.games;
+        if (basePlayer.games) {
+            playerWithFunc.games = basePlayer.games;
+        }
         return playerWithFunc;
     }
 }

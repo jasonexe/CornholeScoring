@@ -30,10 +30,18 @@ class Score {
     }
     static fromJson(jsonScore) {
         let funcScore = new Score();
-        funcScore.leftCalculatedScore = jsonScore.leftCalculatedScore;
-        funcScore.leftRawScore = jsonScore.leftRawScore;
-        funcScore.rightCalculatedScore = jsonScore.rightCalculatedScore;
-        funcScore.rightRawScore = jsonScore.rightRawScore;
+        if (jsonScore.leftCalculatedScore) {
+            funcScore.leftCalculatedScore = jsonScore.leftCalculatedScore;
+        }
+        if (jsonScore.leftRawScore) {
+            funcScore.leftRawScore = jsonScore.leftRawScore;
+        }
+        if (jsonScore.rightCalculatedScore) {
+            funcScore.rightCalculatedScore = jsonScore.rightCalculatedScore;
+        }
+        if (jsonScore.rightRawScore) {
+            funcScore.rightRawScore = jsonScore.rightRawScore;
+        }
         return funcScore;
     }
 }
@@ -54,8 +62,12 @@ class CornholeFrame {
     }
     static fromJson(jsonFrame) {
         let fullFrame = new CornholeFrame(jsonFrame.frameSequence, jsonFrame.bagsPossible);
-        fullFrame.leftScore = jsonFrame.leftScore;
-        fullFrame.rightScore = jsonFrame.rightScore;
+        if (jsonFrame.leftScore) {
+            fullFrame.leftScore = jsonFrame.leftScore;
+        }
+        if (jsonFrame.rightScore) {
+            fullFrame.rightScore = jsonFrame.rightScore;
+        }
         return fullFrame;
     }
     addBagResult(teamSide, bagStatus) {

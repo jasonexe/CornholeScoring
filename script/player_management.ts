@@ -60,6 +60,11 @@ class CornholePlayer {
         this.updateStorage();
     }
 
+    addFullGame(gameId: number, allFrames: Array<IndividualFrame>) {
+        this.games.set(gameId, allFrames);
+        this.updateStorage();
+    }
+
     // Stores any updates to this CornholePlayer in LocalStorage
     updateStorage() {
         updatePlayerData(this);
@@ -85,8 +90,26 @@ let updatePlayerData = function (player: CornholePlayer) {
     localStorage.setObject(PLAYER_KEY, allPlayers);
 }
 
+// Adds the given completed game to the existing map of completed games.
+let addGameToPlayer = function(gameId: number, playerName: string, allFrames: Array<IndividualFrame>) {
+    let existingStoredPlayer = getPlayer(playerName);
+    if (existingStoredPlayer != null) {
+        existingStoredPlayer.addFullGame(gameId, allFrames);
+    } else {
+        let newPlayer = new CornholePlayer(playerName, false);
+        newPlayer.addFullGame(gameId, allFrames);
+    }
+}
+
 let getPlayer = function (playerName: string): CornholePlayer {
     let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
+    if (allPlayers == null) {
+        initializePlayers();
+        return null;
+    }
+    if (!allPlayers.has(playerName)) {
+        return null;
+    }
     return CornholePlayer.fromJson(allPlayers.get(playerName));
 }
 

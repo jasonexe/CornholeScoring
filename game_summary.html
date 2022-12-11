@@ -181,17 +181,21 @@
                 let fullGameId = urlParams.get("storedGameId");
                 let promises = [];
                 promises.push(get(child(ref(database), 'games/' + fullGameId)));
-                let gameStartTime = fullGameId.substring(0, fullGameId.indexOf(SHARING_ID_SEPARATOR));
+                let gameStartTime = parseInt(fullGameId.substring(0, fullGameId.indexOf(SHARING_ID_SEPARATOR)));
                 for (let playerName of fullGameId.split(SHARING_ID_SEPARATOR).slice(1)) {
                     playerName = playerName.replace("¯", " ");
                     promises.push(get(child(ref(database), "playerFrames/" + playerName + SHARING_ID_SEPARATOR + gameStartTime)));
                 }
                 Promise.all(promises).then((snapshots) => {
-                    storePastGame(snapshots[0].val());
-                    playerGameData = new Map();
+                    let game = CornholeGame.fromJson(snapshots[0].val());
+                    // playerGameData = new Map();
                     for (let playerFrame of snapshots.slice(1)) {
-                        playerGameData.set(playerFrame.key.substring(0, playerFrame.key.indexOf(SHARING_ID_SEPARATOR)), playerFrame.val());
+                        let playerName = playerFrame.key.substring(0, playerFrame.key.indexOf(SHARING_ID_SEPARATOR));
+                        // playerGameData.set(playerName, playerFrame.val());
+                        addGameToPlayer(gameStartTime, playerName, playerFrame.val());
+                        game.updatePlayer(getPlayer(playerName));
                     }
+                    storePastGame(game);
                     displayGameInUrl();
                 });
             } else {

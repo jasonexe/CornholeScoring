@@ -29,6 +29,29 @@ class CornholeGame {
         this.currentFrame = new CornholeFrame(0, numberOfBags);
     }
 
+    // Sometimes the player does not have all of their frames. This will replace an existing player with matching name
+    updatePlayer(player: CornholePlayer) {
+        let updatedLeftArray = new Array<CornholePlayer>();
+        for (let checkPlayer of this.leftTeam) {
+            if (checkPlayer.name === player.name) {
+                updatedLeftArray.push(player);
+            } else {
+                updatedLeftArray.push(checkPlayer);
+            }
+        }
+        this.leftTeam = updatedLeftArray;
+
+        let updatedRightArray = new Array<CornholePlayer>();
+        for (let checkPlayer of this.rightTeam) {
+            if (checkPlayer.name === player.name) {
+                updatedRightArray.push(player);
+            } else {
+                updatedRightArray.push(checkPlayer);
+            }
+        }
+        this.rightTeam = updatedRightArray;
+    }
+
     // Constructs the whole class given a base from JSON parsing
     static fromJson(baseGame: CornholeGame): CornholeGame {
         let leftPlayers = new Array<CornholePlayer>();

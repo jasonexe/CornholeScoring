@@ -11,6 +11,11 @@ let setupPlayerHistoryPage = function () {
         let totalFrames = 0;
         for (let gameInfo of player[1].games) {
             for (let frameData of gameInfo[1]) {
+                if (!frameData.score) {
+                    totalThrown += frameData.bagsPossible;
+                    totalFrames += 1;
+                    continue;
+                }
                 for (let bagStatus of frameData.score) {
                     if (bagStatus === BagStatus.IN) {
                         totalHoles += 1;
@@ -42,7 +47,7 @@ let setupPlayerHistoryPage = function () {
         tableContainer.append(titleRow);
 
         let percentageRow = document.createElement("tr");
-        percentageRow.append(createTableDataWithText(Math.round(((totalHoles*3 + totalBoards) / (totalThrown * 3)) * 100).toString() + "%", true));
+        percentageRow.append(createTableDataWithText(Math.round(((totalHoles * 3 + totalBoards) / (totalThrown * 3)) * 100).toString() + "%", true));
         percentageRow.append(createTableDataWithText(Math.round((totalHoles / totalThrown) * 100).toString() + "%", true));
         percentageRow.append(createTableDataWithText(Math.round((totalBoards / totalThrown) * 100).toString() + "%", true));
         percentageRow.append(createTableDataWithText(Math.round(((totalThrown - (totalHoles + totalBoards)) / totalThrown) * 100).toString() + "%", true));
@@ -60,10 +65,10 @@ let setupPlayerHistoryPage = function () {
 
         playerSection.append(tableContainer);
 
-        
+
         playerSection.append(document.createElement("hr"));
 
-        if(player[1].archived) {
+        if (player[1].archived) {
             archivedContainer.append(playerSection);
         } else {
             unarchivedContainer.append(playerSection);
@@ -72,7 +77,7 @@ let setupPlayerHistoryPage = function () {
 }
 
 let displayArchivedPlayers = false;
-let toggleArchiveDisplay = function() {
+let toggleArchiveDisplay = function () {
     let unarchivedContainer = document.getElementById("non_archived_player_history_container");
     let archivedContainer = document.getElementById("archived_player_history_container");
     if (displayArchivedPlayers) {

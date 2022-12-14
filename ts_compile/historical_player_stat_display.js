@@ -11,6 +11,11 @@ let setupPlayerHistoryPage = function () {
         let totalFrames = 0;
         for (let gameInfo of player[1].games) {
             for (let frameData of gameInfo[1]) {
+                if (!frameData.score) {
+                    totalThrown += frameData.bagsPossible;
+                    totalFrames += 1;
+                    continue;
+                }
                 for (let bagStatus of frameData.score) {
                     if (bagStatus === BagStatus.IN) {
                         totalHoles += 1;

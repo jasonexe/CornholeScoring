@@ -62,6 +62,9 @@ class CornholePlayer {
         if (basePlayer.games) {
             playerWithFunc.games = basePlayer.games;
         }
+        else if (getPlayer(basePlayer.name)) {
+            playerWithFunc.games = getPlayer(basePlayer.name).games;
+        }
         return playerWithFunc;
     }
 }

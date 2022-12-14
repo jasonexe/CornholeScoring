@@ -75,6 +75,8 @@ class CornholePlayer {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
         if(basePlayer.games) {
             playerWithFunc.games = basePlayer.games;
+        } else if (getPlayer(basePlayer.name)) {
+            playerWithFunc.games = getPlayer(basePlayer.name).games;
         }
         return playerWithFunc;
     }

@@ -1,10 +1,68 @@
+const sortingFunctions = {
+    "name": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => { return a[0].localeCompare(b[0]) },
+    "games_played": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => { return b[1].games.size - a[1].games.size },
+    "average_score": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
+        let player1Aggregate = getPlayerAggregateData(a[1]);
+        let player2Aggregate = getPlayerAggregateData(b[1]);
+        let average1ScorePerFrame = ((player1Aggregate.totalHoles * 3 + player1Aggregate.totalBoards) / (player1Aggregate.totalFrames));
+        let average2ScorePerFrame = ((player2Aggregate.totalHoles * 3 + player2Aggregate.totalBoards) / (player2Aggregate.totalFrames));
+        // Do 2 minus 1 because we want it to be descending
+        return average2ScorePerFrame - average1ScorePerFrame
+    },
+    "hole_rate": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
+        let player1Aggregate = getPlayerAggregateData(a[1]);
+        let player2Aggregate = getPlayerAggregateData(b[1]);
+        return (player2Aggregate.totalHoles / player2Aggregate.totalThrown) - (player1Aggregate.totalHoles / player1Aggregate.totalThrown);
+    },
+    "board_rate": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
+        let player1Aggregate = getPlayerAggregateData(a[1]);
+        let player2Aggregate = getPlayerAggregateData(b[1]);
+        return (player2Aggregate.totalBoards / player2Aggregate.totalThrown) - (player1Aggregate.totalBoards / player1Aggregate.totalThrown);
+    },
+}
+
+class PlayerData {
+    totalHoles: number = 0;
+    totalBoards: number = 0;
+    totalThrown: number = 0;
+    totalFrames: number = 0;
+}
+
+let getPlayerAggregateData = function (player: CornholePlayer) {
+    let playerData = new PlayerData();
+    for (let gameInfo of player.games) {
+        for (let frameData of gameInfo[1]) {
+            if (!frameData.score) {
+                playerData.totalThrown += frameData.bagsPossible;
+                playerData.totalFrames += 1;
+                continue;
+            }
+            for (let bagStatus of frameData.score) {
+                if (bagStatus === BagStatus.IN) {
+                    playerData.totalHoles += 1;
+                } else {
+                    playerData.totalBoards += 1;
+                }
+            }
+            playerData.totalThrown += frameData.bagsPossible;
+            playerData.totalFrames += 1;
+        }
+    }
+    return playerData;
+}
+
 let setupPlayerHistoryPage = function () {
     let unarchivedContainer = document.getElementById("non_archived_player_history_container");
     let archivedContainer = document.getElementById("archived_player_history_container");
-    for (let player of getPlayers()) {
+    unarchivedContainer.innerHTML = "";
+    archivedContainer.innerHTML = "";
+    let sortingChoice = (<HTMLSelectElement>document.getElementsByName("sorting_rule")[0]).selectedOptions[0].value;
+    let sortedPlayers = new Map([...getPlayers()].sort(sortingFunctions[sortingChoice]));
+    for (let player of sortedPlayers) {
         if (player[1].games.size === 0) {
             continue;
         }
+        let aggregateData = getPlayerAggregateData(player[1]);
         let totalHoles = 0;
         let totalBoards = 0;
         let totalThrown = 0;
@@ -47,24 +105,23 @@ let setupPlayerHistoryPage = function () {
         tableContainer.append(titleRow);
 
         let percentageRow = document.createElement("tr");
-        percentageRow.append(createTableDataWithText(Math.round(((totalHoles * 3 + totalBoards) / (totalThrown * 3)) * 100).toString() + "%", true));
-        percentageRow.append(createTableDataWithText(Math.round((totalHoles / totalThrown) * 100).toString() + "%", true));
-        percentageRow.append(createTableDataWithText(Math.round((totalBoards / totalThrown) * 100).toString() + "%", true));
-        percentageRow.append(createTableDataWithText(Math.round(((totalThrown - (totalHoles + totalBoards)) / totalThrown) * 100).toString() + "%", true));
+        percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalHoles * 3 + totalBoards) / (totalThrown * 3)) * 100).toString() + "%", true));
+        percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalHoles / aggregateData.totalThrown) * 100).toString() + "%", true));
+        percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalBoards / aggregateData.totalThrown) * 100).toString() + "%", true));
+        percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalThrown - (aggregateData.totalHoles + aggregateData.totalBoards)) / aggregateData.totalThrown) * 100).toString() + "%", true));
         percentageRow.append(createTableDataWithText("N/A", true));
         tableContainer.append(percentageRow);
 
         let countRow = document.createElement("tr");
-        countRow.append(createTableDataWithText(((totalHoles * 3 + totalBoards)).toString(), true));
-        countRow.append(createTableDataWithText((totalHoles).toString(), true));
-        countRow.append(createTableDataWithText((totalBoards).toString(), true));
-        countRow.append(createTableDataWithText(((totalThrown - (totalHoles + totalBoards))).toString(), true));
-        let averageScorePerFrame = ((totalHoles * 3 + totalBoards) / (totalFrames));
+        countRow.append(createTableDataWithText(((aggregateData.totalHoles * 3 + aggregateData.totalBoards)).toString(), true));
+        countRow.append(createTableDataWithText((aggregateData.totalHoles).toString(), true));
+        countRow.append(createTableDataWithText((aggregateData.totalBoards).toString(), true));
+        countRow.append(createTableDataWithText(((aggregateData.totalThrown - (aggregateData.totalHoles + aggregateData.totalBoards))).toString(), true));
+        let averageScorePerFrame = ((aggregateData.totalHoles * 3 + aggregateData.totalBoards) / (aggregateData.totalFrames));
         countRow.append(createTableDataWithText((Math.round((averageScorePerFrame + Number.EPSILON) * 100) / 100).toString(), true));
         tableContainer.append(countRow);
 
         playerSection.append(tableContainer);
-
 
         playerSection.append(document.createElement("hr"));
 

@@ -38,6 +38,16 @@
         <button onclick="toggleArchiveDisplay()">
             Toggle Archived Player Display
         </button>
+        <div>
+            Sort by: 
+            <select name="sorting_rule" onchange="setupPlayerHistoryPage()">
+                <option value="name"> Name </option>
+                <option value="games_played"> Games played </option>
+                <option value="average_score"> Average score per frame </option>
+                <option value="hole_rate"> Percentage of holes </option>
+                <option value="board_rate"> Percentage of boards </option>
+            </select>
+        </div>
         <br />
         <section id="non_archived_player_history_container" class="player_history_container">
         <!-- <section class="player_stat" style="width:200%">

@@ -26,7 +26,6 @@ class CornholePlayer {
                     this.addFullGameWithoutStorageUpdate(game[0], game[1]);
                 }
             }
-            this.updateStorage();
         }
         if (!this.games.get(gameId)) {
             this.games.set(gameId, new Array());

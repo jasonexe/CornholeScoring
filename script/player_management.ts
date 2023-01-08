@@ -22,6 +22,19 @@ class CornholePlayer {
     }
 
     registerGame(gameId: number) {
+        // If there's already data in storage that doesn't match what's in the game player, merge them
+        // TODO(jason) do a loop comparing game IDs.
+        let localPlayer = getPlayer(this.name);
+        if (localPlayer) {
+            for (let game of localPlayer.games) {
+                // Go through all the games already stored locally, and make sure they're synced up.
+                if (!this.games.has(game[0])) {
+                    // Add it if it's not there
+                    this.addFullGameWithoutStorageUpdate(game[0], game[1]);
+                }
+            }
+            this.updateStorage();
+        }
         if (!this.games.get(gameId)) {
             this.games.set(gameId, new Array<IndividualFrame>());
         }
@@ -63,6 +76,10 @@ class CornholePlayer {
     addFullGame(gameId: number, allFrames: Array<IndividualFrame>) {
         this.games.set(gameId, allFrames);
         this.updateStorage();
+    }
+
+    addFullGameWithoutStorageUpdate(gameId: number, allFrames: Array<IndividualFrame>) {
+        this.games.set(gameId, allFrames);
     }
 
     // Stores any updates to this CornholePlayer in LocalStorage

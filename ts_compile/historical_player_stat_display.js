@@ -26,11 +26,14 @@ class PlayerData {
         this.totalBoards = 0;
         this.totalThrown = 0;
         this.totalFrames = 0;
+        this.totalWins = 0;
     }
 }
 let getPlayerAggregateData = function (player) {
     let playerData = new PlayerData();
+    playerData.totalWins = getPlayerWins(player);
     for (let gameInfo of player.games) {
+        // Determine how the player did in the game
         for (let frameData of gameInfo[1]) {
             if (!frameData.score) {
                 playerData.totalThrown += frameData.bagsPossible;
@@ -51,6 +54,31 @@ let getPlayerAggregateData = function (player) {
     }
     return playerData;
 };
+let getPlayerWins = function (player) {
+    // Determine if the user won the game
+    let totalWins = 0;
+    for (let gameInfo of player.games) {
+        let gameData = getPastGame(gameInfo[0]);
+        if (gameData == null) {
+            continue;
+        }
+        for (let leftTeamPlayer of gameData.leftTeam) {
+            if (player.name == leftTeamPlayer.name) {
+                if (gameData.currentScore.leftCalculatedScore >= 21) {
+                    totalWins += 1;
+                }
+            }
+        }
+        for (let rightTeamPlayer of gameData.leftTeam) {
+            if (player.name == rightTeamPlayer.name) {
+                if (gameData.currentScore.rightCalculatedScore >= 21) {
+                    totalWins += 1;
+                }
+            }
+        }
+    }
+    return totalWins;
+};
 let setupPlayerHistoryPage = function () {
     let unarchivedContainer = document.getElementById("non_archived_player_history_container");
     let archivedContainer = document.getElementById("archived_player_history_container");
@@ -63,37 +91,17 @@ let setupPlayerHistoryPage = function () {
             continue;
         }
         let aggregateData = getPlayerAggregateData(player[1]);
-        let totalHoles = 0;
-        let totalBoards = 0;
-        let totalThrown = 0;
-        let totalFrames = 0;
-        for (let gameInfo of player[1].games) {
-            for (let frameData of gameInfo[1]) {
-                if (!frameData.score) {
-                    totalThrown += frameData.bagsPossible;
-                    totalFrames += 1;
-                    continue;
-                }
-                for (let bagStatus of frameData.score) {
-                    if (bagStatus === BagStatus.IN) {
-                        totalHoles += 1;
-                    }
-                    else {
-                        totalBoards += 1;
-                    }
-                }
-                totalThrown += frameData.bagsPossible;
-                totalFrames += 1;
-            }
-        }
         let playerSection = document.createElement("section");
         playerSection.className = "player_stat";
-        // playerSection.style.width = "200%";
         let nameTitle = createHeader3WithText(player[1].name);
         nameTitle.classList.add("capitalize", "center_text");
         playerSection.append(nameTitle);
         playerSection.append(createHeader3WithText("Statistics"));
-        playerSection.append(createDivWithText("Games Played: " + player[1].games.size.toString() + "<br>Frames Played: " + totalFrames, false));
+        playerSection.append(createDivWithText("Games Played: "
+            + player[1].games.size.toString()
+            + ", Games Won: " + aggregateData.totalWins + " (" + Math.round((aggregateData.totalWins / player[1].games.size) * 100) + "%)"
+            + "<br>Frames Played: " + aggregateData.totalFrames, 
+        /* bold= */ false));
         let tableContainer = document.createElement("table");
         let titleRow = document.createElement("tr");
         titleRow.append(createTableDataWithText("Total", false));
@@ -103,7 +111,7 @@ let setupPlayerHistoryPage = function () {
         titleRow.append(createTableDataWithText("Avg/Frame", false));
         tableContainer.append(titleRow);
         let percentageRow = document.createElement("tr");
-        percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalHoles * 3 + totalBoards) / (totalThrown * 3)) * 100).toString() + "%", true));
+        percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalHoles * 3 + aggregateData.totalBoards) / (aggregateData.totalThrown * 3)) * 100).toString() + "%", true));
         percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalHoles / aggregateData.totalThrown) * 100).toString() + "%", true));
         percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalBoards / aggregateData.totalThrown) * 100).toString() + "%", true));
         percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalThrown - (aggregateData.totalHoles + aggregateData.totalBoards)) / aggregateData.totalThrown) * 100).toString() + "%", true));

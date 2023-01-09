@@ -71,7 +71,7 @@ let getPlayerWins = function (player) {
                 }
             }
         }
-        for (let rightTeamPlayer of gameData.leftTeam) {
+        for (let rightTeamPlayer of gameData.rightTeam) {
             if (player.name == rightTeamPlayer.name) {
                 if (gameData.currentScore.rightCalculatedScore >= 21) {
                     totalWins += 1;

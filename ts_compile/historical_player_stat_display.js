@@ -54,11 +54,13 @@ let getPlayerAggregateData = function (player) {
     }
     return playerData;
 };
+// This is set at the start of setupPlayerHistoryPage()
+let pastGamesCache = undefined;
 let getPlayerWins = function (player) {
     // Determine if the user won the game
     let totalWins = 0;
     for (let gameInfo of player.games) {
-        let gameData = getPastGame(gameInfo[0]);
+        let gameData = pastGamesCache.get(gameInfo[0]);
         if (gameData == null) {
             continue;
         }
@@ -80,6 +82,7 @@ let getPlayerWins = function (player) {
     return totalWins;
 };
 let setupPlayerHistoryPage = function () {
+    pastGamesCache = getPastGames();
     let unarchivedContainer = document.getElementById("non_archived_player_history_container");
     let archivedContainer = document.getElementById("archived_player_history_container");
     unarchivedContainer.innerHTML = "";

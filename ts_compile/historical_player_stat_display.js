@@ -7,7 +7,7 @@ const sortingFunctions = {
         let average1ScorePerFrame = ((player1Aggregate.totalHoles * 3 + player1Aggregate.totalBoards) / (player1Aggregate.totalFrames));
         let average2ScorePerFrame = ((player2Aggregate.totalHoles * 3 + player2Aggregate.totalBoards) / (player2Aggregate.totalFrames));
         // Do 2 minus 1 because we want it to be descending
-        return average2ScorePerFrame - average1ScorePerFrame;
+        return (average2ScorePerFrame || 0) - (average1ScorePerFrame || 0);
     },
     "hole_rate": (a, b) => {
         let player1Aggregate = getPlayerAggregateData(a[1]);

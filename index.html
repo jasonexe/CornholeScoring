@@ -30,7 +30,7 @@
         gtag('js', new Date());
         gtag('config', 'G-J521EDC3RL');
         gtag('config', 'AW-801110251');
-        gtag('event', 'conversion', {'send_to': 'AW-801110251/a-EsCPbC_d4DEOvx__0C'});
+        gtag('event', 'conversion', { 'send_to': 'AW-801110251/a-EsCPbC_d4DEOvx__0C' });
     </script>
     <title>Cornhole Scoring</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -38,11 +38,13 @@
     <link rel="manifest" href="manifest.json" />
 </head>
 
-<body onload="setupPage()">
+<body>
     <!-- Main section with a border on each side, doesn't need to be super wide-->
     <section class="main">
         <section id="start_game">
-            <button onclick="selectTeams()"> Start New Game to 21 or over</button>
+            <a href="game.html">
+                <button> Start New Game to 21 or over</button>
+            </a>
             <br /><br />
             <a href="history.html">
                 <button>View Historical Game Data</button>
@@ -51,137 +53,6 @@
             <a href="player_history.html">
                 <button>View Historical Player Data</button>
             </a>
-        </section>
-
-        <section id="add_players" style="display: none">
-            <button onclick="createNewPlayer(true)">Create new player</button>
-            <div style="margin-top:1em">
-                <select id="player_to_remove" class="needsclick">
-                </select>
-                <button onclick="removePlayer()">Remove this player</button>
-                <button onclick="archivePlayer()">Archive this player</button>
-            </div>
-            <h1>
-                Team 1:
-            </h1>
-            <p>
-                <select name="team_one_player_one" id="team_one_player_one" class="player_options needsclick">
-                </select>
-            </p>
-            <p>
-                <select name="team_one_player_two" id="team_one_player_two" class="player_options needsclick">
-                </select>
-            </p>
-
-            <h1>
-                Team 2:
-            </h1>
-            <p>
-                <select name="team_two_player_one" id="team_two_player_one" class="player_options needsclick">
-                </select>
-            </p>
-
-            <p>
-                <select name="team_two_player_two" id="team_two_player_two" class="player_options needsclick">
-                </select>
-            </p>
-
-            <button onclick="startGame()">Start Game</button>
-        </section>
-
-        <section id="game_screen" style="display: none">
-            <header>
-                <button onclick="endGame()">Cancel Game</button>
-            </header>
-            <section id="player_states" class="horizontal_spacing">
-                <div>
-                    <div>
-                        <select disabled id="team_one_players" class="needsclick">
-                        </select>
-                    </div>
-                    <div>
-                        <h1 id="left_score"> 0 </h1>
-                    </div>
-                </div>
-                <div>
-                    <div style="margin-top: 20px" id="frame_count">
-                        <b>Frame <span id="frame_number">1</span></b>
-                    </div>
-                </div>
-                <div>
-                    <div>
-                        <select disabled id="team_two_players" class="needsclick">
-                        </select>
-                    </div>
-                    <div>
-                        <h1 id="right_score"> 0 </h1>
-                    </div>
-                </div>
-            </section>
-            <section id="score_calculation">
-                <div id="hole_score_buttons" class="horizontal_spacing">
-                    <div>
-                        <button class="score_button" onclick="addThrow(BagStatus.IN, TeamSide.LEFT)">+</button> <span
-                            id="number_in_left_hole">0</span> <button
-                            onclick="subtractThrow(BagStatus.IN, TeamSide.LEFT)" class="score_button">-</button>
-                    </div>
-                    <span class="divider"></span>
-                    <div>
-                        Hole
-                    </div>
-                    <span class="divider"></span>
-                    <div>
-                        <button class="score_button" onclick="addThrow(BagStatus.IN, TeamSide.RIGHT)">+</button> <span
-                            id="number_in_right_hole">0</span> <button class="score_button"
-                            onclick="subtractThrow(BagStatus.IN, TeamSide.RIGHT)">-</button>
-                    </div>
-                </div>
-                <div id="board_score_buttons" class="horizontal_spacing" style="margin-top: 2em">
-                    <div>
-                        <button class="score_button" onclick="addThrow(BagStatus.ON, TeamSide.LEFT)">+</button> <span
-                            id="number_in_left_board">0</span> <button class="score_button"
-                            onclick="subtractThrow(BagStatus.ON, TeamSide.LEFT)">-</button>
-                    </div>
-                    <span class="divider"></span>
-                    <div>
-                        Board
-                    </div>
-                    <span class="divider"></span>
-                    <div>
-                        <button class="score_button" onclick="addThrow(BagStatus.ON, TeamSide.RIGHT)">+</button> <span
-                            id="number_in_right_board">0</span> <button class="score_button"
-                            onclick="subtractThrow(BagStatus.ON, TeamSide.RIGHT)">-</button>
-                    </div>
-                </div>
-            </section>
-            <section id="score_state_buttons">
-                <div>
-                    <button style="background-color: red;" onclick="undoLastFrame()">Undo</button>
-                </div>
-                <div>
-                    <button style="background-color: lightgreen;" onclick="submitFrame()">Submit</button>
-                </div>
-            </section>
-            <section id="overall_scoring" style="margin-top: 2em">
-                <!-- Contains the up-to-date frame score and current total score -->
-                <div class="horizontal_spacing">
-                    <h2 id="left_frame_score">0</h2>
-                    <span class="divider"></span>
-                    <h2>Frame Score</h2>
-                    <span class="divider"></span>
-                    <h2 id="right_frame_score">0</h2>
-                </div>
-                <div class="horizontal_spacing">
-                    <h2 id="left_current_score">0</h2>
-                    <span class="divider"></span>
-                    <h2>Current Score</h2>
-                    <span class="divider"></span>
-                    <h2 id="right_current_score">0</h2>
-                </div>
-            </section>
-            <section id="past_frames" style="margin-top:2em">
-                <!-- This section contains the past frames that are displayed during the game. -->
-            </section>
         </section>
     </section>
 

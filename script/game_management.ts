@@ -220,15 +220,13 @@ let startGame = function () {
 }
 
 let endGame = function () {
-    // Store the game in the history, clear the current game from storage.
-    storePastGame(getCurrentGame());
+    // Store the game in the history, only if there's actual frames from it. Also clear the current game from storage.
+    if (getCurrentGame().pastFrames.length > 0) {
+        storePastGame(getCurrentGame());
+    }
     clearCurrentGame();
 
-    let startGameScreen = document.getElementById("start_game");
-    let gameProgressScreen = document.getElementById("game_screen");
-
-    gameProgressScreen.style.display = "none";
-    startGameScreen.style.display = "block";
+    window.location.href = "index.html";
 }
 
 let storeCurrentGame = function (currentGame: CornholeGame) {

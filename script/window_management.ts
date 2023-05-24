@@ -1,5 +1,5 @@
 // Sets up any storage if it hasn't been initialized yet
-let setupPage = function () {
+let setupGamePage = function () {
     initializePlayers();
     updatePlayerSelectionList();
     if (getCurrentGame()) {
@@ -79,10 +79,8 @@ const updatePlayerSelectionList = function () {
 }
 
 let displayGameProgress = function (frameNumber: number) {
-    let startGameScreen = document.getElementById("start_game");
     let addPlayerScreen = document.getElementById("add_players");
     let gameProgressScreen = document.getElementById("game_screen");
-    startGameScreen.style.display = "none";
     addPlayerScreen.style.display = "none";
     gameProgressScreen.style.display = "block";
 

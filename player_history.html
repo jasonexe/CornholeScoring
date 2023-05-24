@@ -18,6 +18,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 <link href="css/style.css" rel="stylesheet" />
+
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J521EDC3RL"></script>
     <script>
@@ -26,11 +27,18 @@
         gtag('js', new Date());
         gtag('config', 'G-J521EDC3RL');
         gtag('config', 'AW-801110251');
-        gtag('event', 'conversion', {'send_to': 'AW-801110251/a-EsCPbC_d4DEOvx__0C'});
+        gtag('event', 'conversion', { 'send_to': 'AW-801110251/a-EsCPbC_d4DEOvx__0C' });
     </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        .date-picker {
+            display: inline-block;
+        }
+    </style>
 </head>
 
-<body onload="setupPlayerHistoryPage()">
+<body onload="setupPlayerHistoryPage(); initializeDateRanges();">
     <section class="main" id="main_player_history_container">
         <a href="index.html">
             <button>Back to Main</button>
@@ -38,8 +46,12 @@
         <button onclick="toggleArchiveDisplay()">
             Toggle Archived Player Display
         </button>
+        <div class="date-picker">
+            <input type="text" id="start-date" placeholder="Start Date">
+            <input type="text" id="end-date" placeholder="End Date">
+        </div>
         <div>
-            Sort by: 
+            Sort by:
             <select name="sorting_rule" class="needsclick" onchange="setupPlayerHistoryPage()">
                 <option value="name"> Name </option>
                 <option value="games_played"> Games played </option>
@@ -47,10 +59,15 @@
                 <option value="hole_rate"> Percentage of holes </option>
                 <option value="board_rate"> Percentage of boards </option>
             </select>
+            Preload date range:
+            <select id="date-range-select" name="date_ranges" class="needsclick" onchange="preloadDateRange(this.value); setupPlayerHistoryPage();">
+                <option hidden disabled selected value> -- select an option -- </option>
+                <option value="__">Clear</option>
+            </select>
         </div>
         <br />
         <section id="non_archived_player_history_container" class="player_history_container">
-        <!-- <section class="player_stat" style="width:200%">
+            <!-- <section class="player_stat" style="width:200%">
             <h3 class="center_text">Jason</h3>
             <h3>Statistics</h3>
             <section class="horizontal_spacing">
@@ -78,6 +95,32 @@
 
         </section>
     </section>
+
+    <script>
+        flatpickr("#start-date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            onClose: function (selectedDates) {
+                // Set the minimum date for the end date picker
+                flatpickr("#end-date", {
+                    minDate: selectedDates[0] || "today"
+                });
+                setupPlayerHistoryPage();
+            },
+        });
+
+        flatpickr("#end-date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            onClose: function (selectedDates) {
+                // Set the maximum date for the start date picker
+                flatpickr("#start-date", {
+                    maxDate: selectedDates[0] || null
+                });
+                setupPlayerHistoryPage();
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -29,11 +29,62 @@ class PlayerData {
     totalWins: number = 0;
 }
 
+
+interface DateRange {
+    start: Date;
+    end: Date;
+    label: string;
+}
+
+let initializeDateRanges = function () {
+    // Get current date
+    const currentDate: Date = new Date();
+
+    // Create an array to store the date ranges
+    const dateRanges: DateRange[] = [];
+
+    // Generate date ranges for the past 12 months
+    for (let i = 0; i < 12; i += 3) {
+        const endDate: Date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, currentDate.getDate() + 1);
+        const startDate: Date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i - 2, currentDate.getDate() + 1);
+
+        const endDateString: string = endDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const startDateString: string = startDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+        dateRanges.push({ start: startDate, end: endDate, label: `${startDateString} - ${endDateString}` });
+    }
+
+    // Populate the select box with date ranges
+    const selectBox: HTMLSelectElement = document.getElementById('date-range-select') as HTMLSelectElement;
+
+    for (let j = 0; j < dateRanges.length; j++) {
+        const option: HTMLOptionElement = document.createElement('option');
+        option.value = formatDate(dateRanges[j].start) + "__" + formatDate(dateRanges[j].end);
+        option.text = dateRanges[j].label;
+
+        selectBox.appendChild(option);
+    }
+}
+
+let preloadDateRange = function (value: String) {
+    let dates = value.split("__");
+    let startDate = dates[0];
+    let endDate = dates[1];
+    (document.getElementById("start-date") as HTMLInputElement).value = startDate;
+    (document.getElementById("end-date") as HTMLInputElement).value = endDate;
+}
+
 let getPlayerAggregateData = function (player: CornholePlayer) {
+    let startDate = new Date((document.getElementById("start-date") as HTMLInputElement).value)
+    let endDate = new Date((document.getElementById("end-date") as HTMLInputElement).value)
     let playerData = new PlayerData();
     playerData.totalWins = getPlayerWins(player);
     for (let gameInfo of player.games) {
         // Determine how the player did in the game
+        let gameDate = new Date(gameInfo[0]);
+        if (gameDate > endDate || gameDate < startDate) {
+            continue;
+        }
         for (let frameData of gameInfo[1]) {
             if (!frameData.score) {
                 playerData.totalThrown += frameData.bagsPossible;
@@ -56,7 +107,7 @@ let getPlayerAggregateData = function (player: CornholePlayer) {
 
 // This is set at the start of setupPlayerHistoryPage()
 let pastGamesCache = undefined;
-let getPlayerWins = function(player: CornholePlayer) {
+let getPlayerWins = function (player: CornholePlayer) {
     // Determine if the user won the game
     let totalWins = 0;
     for (let gameInfo of player.games) {
@@ -158,4 +209,12 @@ let toggleArchiveDisplay = function () {
         archivedContainer.style.display = "block";
     }
     displayArchivedPlayers = !displayArchivedPlayers;
+}
+
+function formatDate(date: Date): string {
+    const year: number = date.getFullYear();
+    const month: string = String(date.getMonth() + 1).padStart(2, '0');
+    const day: string = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
 }

@@ -29,11 +29,46 @@ class PlayerData {
         this.totalWins = 0;
     }
 }
+let initializeDateRanges = function () {
+    // Get current date
+    const currentDate = new Date();
+    // Create an array to store the date ranges
+    const dateRanges = [];
+    // Generate date ranges for the past 12 months
+    for (let i = 0; i < 12; i += 3) {
+        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, currentDate.getDate() + 1);
+        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i - 2, currentDate.getDate() + 1);
+        const endDateString = endDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const startDateString = startDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        dateRanges.push({ start: startDate, end: endDate, label: `${startDateString} - ${endDateString}` });
+    }
+    // Populate the select box with date ranges
+    const selectBox = document.getElementById('date-range-select');
+    for (let j = 0; j < dateRanges.length; j++) {
+        const option = document.createElement('option');
+        option.value = formatDate(dateRanges[j].start) + "__" + formatDate(dateRanges[j].end);
+        option.text = dateRanges[j].label;
+        selectBox.appendChild(option);
+    }
+};
+let preloadDateRange = function (value) {
+    let dates = value.split("__");
+    let startDate = dates[0];
+    let endDate = dates[1];
+    document.getElementById("start-date").value = startDate;
+    document.getElementById("end-date").value = endDate;
+};
 let getPlayerAggregateData = function (player) {
+    let startDate = new Date(document.getElementById("start-date").value);
+    let endDate = new Date(document.getElementById("end-date").value);
     let playerData = new PlayerData();
     playerData.totalWins = getPlayerWins(player);
     for (let gameInfo of player.games) {
         // Determine how the player did in the game
+        let gameDate = new Date(gameInfo[0]);
+        if (gameDate > endDate || gameDate < startDate) {
+            continue;
+        }
         for (let frameData of gameInfo[1]) {
             if (!frameData.score) {
                 playerData.totalThrown += frameData.bagsPossible;
@@ -152,4 +187,10 @@ let toggleArchiveDisplay = function () {
     }
     displayArchivedPlayers = !displayArchivedPlayers;
 };
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 //# sourceMappingURL=historical_player_stat_display.js.map

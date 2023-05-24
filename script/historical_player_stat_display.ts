@@ -146,6 +146,9 @@ let setupPlayerHistoryPage = function () {
             continue;
         }
         let aggregateData = getPlayerAggregateData(player[1]);
+        if (aggregateData.totalThrown === 0) {
+            continue;
+        }
 
         let playerSection = document.createElement("section");
         playerSection.className = "player_stat";

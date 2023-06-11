@@ -27,6 +27,7 @@ class PlayerData {
         this.totalThrown = 0;
         this.totalFrames = 0;
         this.totalWins = 0;
+        this.gamesPlayed = 0;
     }
 }
 let initializeDateRanges = function () {
@@ -62,13 +63,14 @@ let getPlayerAggregateData = function (player) {
     let startDate = new Date(document.getElementById("start-date").value);
     let endDate = new Date(document.getElementById("end-date").value);
     let playerData = new PlayerData();
-    playerData.totalWins = getPlayerWins(player);
+    playerData.totalWins = getPlayerWins(player, startDate, endDate);
     for (let gameInfo of player.games) {
         // Determine how the player did in the game
         let gameDate = new Date(gameInfo[0]);
         if (gameDate > endDate || gameDate < startDate) {
             continue;
         }
+        playerData.gamesPlayed += 1;
         for (let frameData of gameInfo[1]) {
             if (!frameData.score) {
                 playerData.totalThrown += frameData.bagsPossible;
@@ -91,10 +93,14 @@ let getPlayerAggregateData = function (player) {
 };
 // This is set at the start of setupPlayerHistoryPage()
 let pastGamesCache = undefined;
-let getPlayerWins = function (player) {
+let getPlayerWins = function (player, startDate, endDate) {
     // Determine if the user won the game
     let totalWins = 0;
     for (let gameInfo of player.games) {
+        let gameDate = new Date(gameInfo[0]);
+        if (gameDate > endDate || gameDate < startDate) {
+            continue;
+        }
         let gameData = pastGamesCache.get(gameInfo[0]);
         if (gameData == null) {
             continue;
@@ -139,8 +145,8 @@ let setupPlayerHistoryPage = function () {
         playerSection.append(nameTitle);
         playerSection.append(createHeader3WithText("Statistics"));
         playerSection.append(createDivWithText("Games Played: "
-            + player[1].games.size.toString()
-            + ", Games Won: " + aggregateData.totalWins + " (" + Math.round((aggregateData.totalWins / player[1].games.size) * 100) + "%)"
+            + aggregateData.gamesPlayed.toString()
+            + ", Games Won: " + aggregateData.totalWins + " (" + Math.round((aggregateData.totalWins / aggregateData.gamesPlayed) * 100) + "%)"
             + "<br>Frames Played: " + aggregateData.totalFrames, 
         /* bold= */ false));
         let tableContainer = document.createElement("table");

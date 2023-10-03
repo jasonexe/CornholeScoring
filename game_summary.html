@@ -171,8 +171,14 @@
                     "playerFrames/" + playerName + SHARING_ID_SEPARATOR + game.id),
                     getPlayer(playerName).games.get(game.id));
             }
-            navigator.clipboard.writeText("scorehole.com/game_summary.html?storedGameId=" + storedGameId);
-            alert("URL copied to clipboard");
+            navigator.clipboard
+                .writeText("scorehole.com/game_summary.html?storedGameId=" + storedGameId)
+                .then(() => {
+                    alert("URL copied to clipboard");
+                }).catch(() => {
+                    alert("Something went wrong");
+                });
+
         }
 
         function retrieveUrlGameFromFirebase() {

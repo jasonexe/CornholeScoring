@@ -1,6 +1,12 @@
 const sortingFunctions = {
     "name": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => { return a[0].localeCompare(b[0]) },
-    "games_played": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => { return b[1].games.size - a[1].games.size },
+    "games_played": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
+        if (b[1].games.size === a[1].games.size) {
+            // If both played the same number of games, order alphabetically
+            return a[0].localeCompare(b[0]);
+        }
+        return b[1].games.size - a[1].games.size;
+    },
     "average_score": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
         let player1Aggregate = getPlayerAggregateData(a[1]);
         let player2Aggregate = getPlayerAggregateData(b[1]);

@@ -1,6 +1,12 @@
 const sortingFunctions = {
     "name": (a, b) => { return a[0].localeCompare(b[0]); },
-    "games_played": (a, b) => { return b[1].games.size - a[1].games.size; },
+    "games_played": (a, b) => {
+        if (b[1].games.size === a[1].games.size) {
+            // If both played the same number of games, order alphabetically
+            return a[0].localeCompare(b[0]);
+        }
+        return b[1].games.size - a[1].games.size;
+    },
     "average_score": (a, b) => {
         let player1Aggregate = getPlayerAggregateData(a[1]);
         let player2Aggregate = getPlayerAggregateData(b[1]);

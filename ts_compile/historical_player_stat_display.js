@@ -1,11 +1,14 @@
 const sortingFunctions = {
     "name": (a, b) => { return a[0].localeCompare(b[0]); },
     "games_played": (a, b) => {
-        if (b[1].games.size === a[1].games.size) {
+        // We only care about games played during the date range, so filter out others.
+        let aGamesPlayed = getGameCountWithinDateRange(a);
+        let bGamesPlayed = getGameCountWithinDateRange(b);
+        if (aGamesPlayed === bGamesPlayed) {
             // If both played the same number of games, order alphabetically
             return a[0].localeCompare(b[0]);
         }
-        return b[1].games.size - a[1].games.size;
+        return bGamesPlayed - aGamesPlayed;
     },
     "average_score": (a, b) => {
         let player1Aggregate = getPlayerAggregateData(a[1]);
@@ -36,6 +39,19 @@ class PlayerData {
         this.gamesPlayed = 0;
     }
 }
+let getGameCountWithinDateRange = function (gameList) {
+    let gamesPlayed = 0;
+    let startDate = new Date(document.getElementById("start-date").value);
+    let endDate = new Date(document.getElementById("end-date").value);
+    for (let gameTime of gameList[1].games.keys()) {
+        let gameDate = new Date(gameTime);
+        if (gameDate > endDate || gameDate < startDate) {
+            continue;
+        }
+        gamesPlayed += 1;
+    }
+    return gamesPlayed;
+};
 let initializeDateRanges = function () {
     // Get current date
     const currentDate = new Date();

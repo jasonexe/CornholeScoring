@@ -1,20 +1,53 @@
 // Sets up any storage if it hasn't been initialized yet
 let setupGamePage = function () {
     initializePlayers();
-    updatePlayerSelectionList();
+    updatePlayerSelectionList(/* initialize= */ true);
     if (getCurrentGame()) {
         // If there was already a game loaded, go straight to the game page.
         displayGameProgress(getCurrentGame().pastFrames.length);
     }
 }
 
+const swapTeamOnePlayers = function () {
+    let playerOneIndex = (<HTMLSelectElement>document.getElementById("team_one_player_one")).selectedIndex;
+    let playerTwoIndex = (<HTMLSelectElement>document.getElementById("team_one_player_two")).selectedIndex;
+
+    (<HTMLSelectElement>document.getElementById("team_one_player_one")).selectedIndex = playerTwoIndex;
+    (<HTMLSelectElement>document.getElementById("team_one_player_two")).selectedIndex = playerOneIndex;
+}
+
+const swapTeamTwoPlayers = function () {
+    let playerOneIndex = (<HTMLSelectElement>document.getElementById("team_two_player_one")).selectedIndex;
+    let playerTwoIndex = (<HTMLSelectElement>document.getElementById("team_two_player_two")).selectedIndex;
+
+    (<HTMLSelectElement>document.getElementById("team_two_player_one")).selectedIndex = playerTwoIndex;
+    (<HTMLSelectElement>document.getElementById("team_two_player_two")).selectedIndex = playerOneIndex;
+}
+
 // Updates the dropdowns on screen 2, where the user selects which players are in the game.
-const updatePlayerSelectionList = function () {
+const updatePlayerSelectionList = function (initialize: boolean) {
     let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
     let mostRecentGame;
-    if (getPastGames()) {
+    if (getPastGames() && initialize) {
         mostRecentGame = [...getPastGames().entries()].reduce(
             (firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
+    } else {
+        // "mostRecentGame" is a fake game, with players whose names are currently in the selectors
+        let teamOnePlayerOne = (<HTMLSelectElement>document.getElementById("team_one_player_one")).selectedOptions[0].value;
+        let teamOnePlayerTwo = (<HTMLSelectElement>document.getElementById("team_one_player_two")).selectedOptions[0].value;
+        let teamTwoPlayerOne = (<HTMLSelectElement>document.getElementById("team_two_player_one")).selectedOptions[0].value;
+        let teamTwoPlayerTwo = (<HTMLSelectElement>document.getElementById("team_two_player_two")).selectedOptions[0].value;
+        let fakeGame = new CornholeGame(
+            0,
+            4,
+            [   new CornholePlayer(teamOnePlayerOne, false),
+                new CornholePlayer(teamOnePlayerTwo, false)
+            ],
+            [   new CornholePlayer(teamTwoPlayerOne, false),
+                new CornholePlayer(teamTwoPlayerTwo, false)
+            ]
+        );
+        mostRecentGame = [0, fakeGame];
     }
 
     var sortedPlayers = new Map([...allPlayers.entries()].sort());

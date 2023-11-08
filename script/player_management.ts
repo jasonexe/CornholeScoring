@@ -161,7 +161,7 @@ let createNewPlayer = function (firstTry: boolean) {
         }
     }
 
-    updatePlayerSelectionList();
+    updatePlayerSelectionList(/* initialize= */ false);
 }
 
 let removePlayer = function() {
@@ -170,7 +170,7 @@ let removePlayer = function() {
     let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
     allPlayers.delete(removedPlayerName);
     localStorage.setObject(PLAYER_KEY, allPlayers);
-    updatePlayerSelectionList();
+    updatePlayerSelectionList(/* initialize= */ false);
 }
 
 let archivePlayer = function() {
@@ -180,7 +180,7 @@ let archivePlayer = function() {
     // Archive using the variable so we don't need a deep copy
     allPlayers.get(archivePlayerName).archived = true;
     localStorage.setObject(PLAYER_KEY, allPlayers);
-    updatePlayerSelectionList();
+    updatePlayerSelectionList(/* initialize= */ false);
 }
 
 // Just initializes 4 players if there aren't any

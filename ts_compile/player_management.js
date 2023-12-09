@@ -5,6 +5,7 @@ class CornholePlayer {
         this.name = name;
         this.archived = archived;
         this.games = new Map();
+        this.favorite = false;
     }
     /**
      * "Archive" the player - this means they'll only show up in the player summary list, but won't be available to choose
@@ -74,6 +75,7 @@ class CornholePlayer {
     // Constructs the whole class given a base from JSON parsing
     static fromJson(basePlayer) {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
+        playerWithFunc.favorite = basePlayer.favorite;
         if (basePlayer.games) {
             playerWithFunc.games = basePlayer.games;
         }
@@ -144,6 +146,14 @@ let createNewPlayer = function (firstTry) {
             createNewPlayer(/* firstTry= */ false);
         }
     }
+    updatePlayerSelectionList(/* initialize= */ false);
+};
+let favoritePlayer = function () {
+    let favoritePlayerSelector = document.getElementById("player_to_remove");
+    let favoritePlayerName = favoritePlayerSelector.selectedOptions[0].value;
+    let allPlayers = localStorage.getObject(PLAYER_KEY);
+    allPlayers.get(favoritePlayerName).favorite = !allPlayers.get(favoritePlayerName).favorite;
+    localStorage.setObject(PLAYER_KEY, allPlayers);
     updatePlayerSelectionList(/* initialize= */ false);
 };
 let removePlayer = function () {

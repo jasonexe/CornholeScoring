@@ -1,7 +1,7 @@
 const CURRENT_GAME = "__CURRENT_GAME__";
 const HISTORICAL_GAMES = "__HISTORICAL_GAMES__";
 class CornholeGame {
-    constructor(gameId, numberOfBags, leftTeam, rightTeam) {
+    constructor(gameId, numberOfBags, leftTeam, rightTeam, registerGame) {
         this.pastFrames = new Array();
         this.currentScore = new Score();
         if (gameId === 0) {
@@ -11,12 +11,14 @@ class CornholeGame {
             this.id = gameId;
         }
         this.leftTeam = leftTeam;
-        for (let player of leftTeam) {
-            player.registerGame(this.id);
-        }
         this.rightTeam = rightTeam;
-        for (let player of rightTeam) {
-            player.registerGame(this.id);
+        if (registerGame) {
+            for (let player of leftTeam) {
+                player.registerGame(this.id);
+            }
+            for (let player of rightTeam) {
+                player.registerGame(this.id);
+            }
         }
         this.numberOfBags = numberOfBags;
         this.currentFrame = new CornholeFrame(0, numberOfBags);
@@ -54,7 +56,7 @@ class CornholeGame {
         for (let rightPlayer of baseGame.rightTeam) {
             rightPlayers.push(CornholePlayer.fromJson(rightPlayer));
         }
-        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers);
+        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, true);
         gameWithFunctions.id = baseGame.id;
         let pastFrames = new Array();
         for (let pastFrame of baseGame.pastFrames) {
@@ -177,7 +179,8 @@ let startGame = function () {
     ], [
         getPlayer(teamTwoPlayerOneName),
         getPlayer(teamTwoPlayerTwoName),
-    ]);
+    ], 
+    /* registerGame= */ true);
     storeCurrentGame(newGame);
     displayGameProgress(0);
 };

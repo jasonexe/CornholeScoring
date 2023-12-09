@@ -5,11 +5,13 @@ class CornholePlayer {
     name: string;
     archived: boolean;
     games = new Map<number, Array<IndividualFrame>>();
+    favorite: boolean;
 
     constructor(name: string, archived: boolean) {
         this.name = name;
         this.archived = archived;
         this.games = new Map<number, Array<IndividualFrame>>();
+        this.favorite = false;
     }
 
     /**
@@ -89,6 +91,7 @@ class CornholePlayer {
     // Constructs the whole class given a base from JSON parsing
     static fromJson(basePlayer: CornholePlayer): CornholePlayer {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
+        playerWithFunc.favorite = basePlayer.favorite;
         if(basePlayer.games) {
             playerWithFunc.games = basePlayer.games;
         } else if (getPlayer(basePlayer.name)) {
@@ -161,6 +164,15 @@ let createNewPlayer = function (firstTry: boolean) {
         }
     }
 
+    updatePlayerSelectionList(/* initialize= */ false);
+}
+
+let favoritePlayer = function() {
+    let favoritePlayerSelector = <HTMLSelectElement> document.getElementById("player_to_remove");
+    let favoritePlayerName = favoritePlayerSelector.selectedOptions[0].value;
+    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
+    allPlayers.get(favoritePlayerName).favorite = !allPlayers.get(favoritePlayerName).favorite;
+    localStorage.setObject(PLAYER_KEY, allPlayers);
     updatePlayerSelectionList(/* initialize= */ false);
 }
 

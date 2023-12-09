@@ -25,6 +25,8 @@ const swapTeamTwoPlayers = function () {
 }
 
 // Updates the dropdowns on screen 2, where the user selects which players are in the game.
+// Set initialize to true if you want to pre-set the selectors to whatever the previous game was. If initialize is false, then the
+// selector options will update without changing the current selection.
 const updatePlayerSelectionList = function (initialize: boolean) {
     let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
     let mostRecentGame;
@@ -45,12 +47,22 @@ const updatePlayerSelectionList = function (initialize: boolean) {
             ],
             [   new CornholePlayer(teamTwoPlayerOne, false),
                 new CornholePlayer(teamTwoPlayerTwo, false)
-            ]
+            ],
+            /* registerGame= */ false
         );
         mostRecentGame = [0, fakeGame];
     }
 
-    var sortedPlayers = new Map([...allPlayers.entries()].sort());
+    var sortedPlayers = new Map([...allPlayers.entries()].sort((player1, player2) => {
+        // If one is favorite and the other is not, then favorite is higher
+        if(player1[1].favorite && !player2[1].favorite) {
+            return -1;
+        } else if (!player1[1].favorite && player2[1].favorite) {
+            return 1;
+        }
+        // If either both are or are not favorite, then just straight compare the name
+        return player1[0] > player2[0] ? 1 : -1;
+    }));
     let playerSelectors = Array.from(document.getElementsByClassName("player_options"));
     for (let selectorIndexString in playerSelectors) {
         let selectorIndex = parseInt(selectorIndexString);

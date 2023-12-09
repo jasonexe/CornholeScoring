@@ -106,7 +106,8 @@ let getPlayerAggregateData = function (player: CornholePlayer) {
     for (let gameInfo of player.games) {
         // Determine how the player did in the game
         let gameDate = new Date(gameInfo[0]);
-        if (gameDate > endDate || gameDate < startDate) {
+        // If the game was out of range, or it wasn't actually played, skip it
+        if (gameDate > endDate || gameDate < startDate || gameInfo[1].length == 0) {
             continue;
         }
         playerData.gamesPlayed += 1;

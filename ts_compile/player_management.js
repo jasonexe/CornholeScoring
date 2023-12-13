@@ -75,7 +75,7 @@ class CornholePlayer {
     // Constructs the whole class given a base from JSON parsing
     static fromJson(basePlayer) {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
-        playerWithFunc.favorite = basePlayer.favorite;
+        playerWithFunc.favorite = basePlayer.favorite === undefined ? false : basePlayer.favorite;
         if (basePlayer.games) {
             playerWithFunc.games = basePlayer.games;
         }

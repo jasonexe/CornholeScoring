@@ -156,13 +156,13 @@
             let rightNameTwo = game.rightTeam[1].name;
             let storedGameId = game.id
                 + SHARING_ID_SEPARATOR
-                + leftNameOne.replace(" ", "¯")
+                + leftNameOne.replaceAll(" ", "¯")
                 + SHARING_ID_SEPARATOR
-                + leftNameTwo.replace(" ", "¯")
+                + leftNameTwo.replaceAll(" ", "¯")
                 + SHARING_ID_SEPARATOR
-                + rightNameOne.replace(" ", "¯")
+                + rightNameOne.replaceAll(" ", "¯")
                 + SHARING_ID_SEPARATOR
-                + rightNameTwo.replace(" ", "¯");
+                + rightNameTwo.replaceAll(" ", "¯");
 
             set(ref(database, 'games/' + storedGameId), game);
             // TODO: set players/... for each player + gameId

@@ -190,7 +190,7 @@ class GameStatsForPlayer {
                     }
                     break;
                 case TeamSide.RIGHT:
-                    for (let bagStatus of frame.leftScore) {
+                    for (let bagStatus of frame.rightScore) {
                         summary.incrementStatus(bagStatus);
                         if (bagStatus === BagStatus.IN) {
                             numHoles += 1;

@@ -115,7 +115,7 @@ let getGameFromUrl = function (): CornholeGame {
         return getPastGame(parseInt(urlParams.get("gameId")));
     } else if (urlParams.has("gameData")) {
         playerGameData = JSON.parse(uncrush(urlParams.get("playerData")), reviver);
-        return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver));
+        return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver), false);
     } else if (urlParams.has("storedGameId")) {
         // set playerGameData
         return getPastGame(parseInt(urlParams.get("storedGameId").split(SHARING_ID_SEPARATOR)[0]));

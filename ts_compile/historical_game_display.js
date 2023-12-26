@@ -101,7 +101,7 @@ let getGameFromUrl = function () {
     }
     else if (urlParams.has("gameData")) {
         playerGameData = JSON.parse(uncrush(urlParams.get("playerData")), reviver);
-        return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver));
+        return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver), false);
     }
     else if (urlParams.has("storedGameId")) {
         // set playerGameData

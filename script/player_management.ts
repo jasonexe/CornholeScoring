@@ -42,8 +42,8 @@ class CornholePlayer {
         this.updateStorage();
     }
 
-    getGameStats(gameId: number): GameStats {
-        return new GameStats();
+    getGameStats(gameId: number): GameStatsForPlayer {
+        return new GameStatsForPlayer(getPastGame(gameId), this.name);
     }
 
     addFrameToGame(gameId: number, frame: IndividualFrame) {

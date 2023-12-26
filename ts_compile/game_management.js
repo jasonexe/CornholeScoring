@@ -47,7 +47,7 @@ class CornholeGame {
         this.rightTeam = updatedRightArray;
     }
     // Constructs the whole class given a base from JSON parsing
-    static fromJson(baseGame) {
+    static fromJson(baseGame, pulledFromStorage) {
         let leftPlayers = new Array();
         for (let leftPlayer of baseGame.leftTeam) {
             leftPlayers.push(CornholePlayer.fromJson(leftPlayer));
@@ -56,7 +56,7 @@ class CornholeGame {
         for (let rightPlayer of baseGame.rightTeam) {
             rightPlayers.push(CornholePlayer.fromJson(rightPlayer));
         }
-        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, true);
+        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, !pulledFromStorage);
         gameWithFunctions.id = baseGame.id;
         let pastFrames = new Array();
         for (let pastFrame of baseGame.pastFrames) {
@@ -202,7 +202,7 @@ let getCurrentGame = function () {
     if (!localStorage.getObject(CURRENT_GAME)) {
         return null;
     }
-    return CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME));
+    return CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME), true);
 };
 let getPastGames = function () {
     let pastGames = localStorage.getObject(HISTORICAL_GAMES);
@@ -211,10 +211,15 @@ let getPastGames = function () {
     }
     return null;
 };
+let historicalGameCache = null;
 let getPastGame = function (gameId) {
-    let pastGames = localStorage.getObject(HISTORICAL_GAMES);
-    if (pastGames.has(gameId)) {
-        return CornholeGame.fromJson(pastGames.get(gameId));
+    // let pastGames = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES);
+    if (historicalGameCache === null) {
+        historicalGameCache = localStorage.getObject(HISTORICAL_GAMES);
+    }
+    // let pastGames = historicalGameCache;
+    if (historicalGameCache.has(gameId)) {
+        return CornholeGame.fromJson(historicalGameCache.get(gameId), true);
     }
     return null;
 };
@@ -227,5 +232,6 @@ let storePastGame = function (finishedGame) {
     }
     pastGames.set(finishedGame.id, finishedGame);
     localStorage.setObject(HISTORICAL_GAMES, pastGames);
+    historicalGameCache = getPastGames();
 };
 //# sourceMappingURL=game_management.js.map

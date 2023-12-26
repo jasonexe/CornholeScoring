@@ -1,0 +1,88 @@
+.main {
+    display: grid;
+    justify-content: center;
+    margin: 30px;
+    justify-items: center;
+    border-right: 1px solid black;
+    border-left: 1px solid black;
+}
+
+.no_style {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+.horizontal_spacing {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header,
+h1,
+h2,
+.center_text {
+    text-align: center;
+}
+
+h2 {
+    font-size: 2.2rem;
+}
+
+h3 {
+    font-size: 1.8rem;
+}
+
+option,
+select,
+.capitalize {
+    text-transform: capitalize;
+}
+
+.score_button {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.divider {
+    flex-grow: 1;
+    border-bottom: 1px solid black;
+    margin: 5px
+}
+
+hr {
+    margin: 0;
+    align-self: stretch;
+}
+
+.bordered_section {
+    border: 1px solid black;
+    margin: .3rem;
+    padding: .3rem;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+#score_state_buttons {
+    display: inline-flex;
+    margin-top: 1em;
+}
+
+#score_state_buttons div:last-child {
+    margin-left: 30px;
+}
+
+footer {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    width: 100%;
+    text-align: right;
+}
+
+table {
+    width: 100%;
+    table-layout: fixed;
+}

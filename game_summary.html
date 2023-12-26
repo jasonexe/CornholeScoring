@@ -193,7 +193,7 @@
                     promises.push(get(child(ref(database), "playerFrames/" + playerName + SHARING_ID_SEPARATOR + gameStartTime)));
                 }
                 Promise.all(promises).then((snapshots) => {
-                    let game = CornholeGame.fromJson(snapshots[0].val());
+                    let game = CornholeGame.fromJson(snapshots[0].val(), false);
                     // playerGameData = new Map();
                     for (let playerFrame of snapshots.slice(1)) {
                         let playerName = playerFrame.key.substring(0, playerFrame.key.indexOf(SHARING_ID_SEPARATOR));

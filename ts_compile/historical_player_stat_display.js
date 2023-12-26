@@ -165,7 +165,11 @@ let setupPlayerHistoryPage = function () {
         playerSection.className = "player_stat";
         let nameTitle = createHeader3WithText(player[1].name);
         nameTitle.classList.add("capitalize", "center_text");
-        playerSection.append(nameTitle);
+        let nameTitleLink = document.createElement("a");
+        nameTitleLink.setAttribute("href", "./individual_stats.html?playerName=" + player[1].name);
+        nameTitleLink.setAttribute("target", "_blank");
+        nameTitleLink.appendChild(nameTitle);
+        playerSection.append(nameTitleLink);
         playerSection.append(createHeader3WithText("Statistics"));
         playerSection.append(createDivWithText("Games Played: "
             + aggregateData.gamesPlayed.toString()

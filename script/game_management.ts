@@ -55,7 +55,7 @@ class CornholeGame {
     }
 
     // Constructs the whole class given a base from JSON parsing
-    static fromJson(baseGame: CornholeGame): CornholeGame {
+    static fromJson(baseGame: CornholeGame, pulledFromStorage: boolean): CornholeGame {
         let leftPlayers = new Array<CornholePlayer>();
         for (let leftPlayer of baseGame.leftTeam) {
             leftPlayers.push(CornholePlayer.fromJson(leftPlayer));
@@ -64,7 +64,7 @@ class CornholeGame {
         for (let rightPlayer of baseGame.rightTeam) {
             rightPlayers.push(CornholePlayer.fromJson(rightPlayer));
         }
-        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, true);
+        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, !pulledFromStorage);
         gameWithFunctions.id = baseGame.id;
         let pastFrames = new Array<CornholeFrame>();
         for (let pastFrame of baseGame.pastFrames) {
@@ -244,7 +244,7 @@ let getCurrentGame = function (): CornholeGame {
     if (!localStorage.getObject(CURRENT_GAME)) {
         return null;
     }
-    return CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME));
+    return CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME), true);
 }
 
 let getPastGames = function (): Map<number, CornholeGame> {
@@ -255,10 +255,16 @@ let getPastGames = function (): Map<number, CornholeGame> {
     return null;
 }
 
+let historicalGameCache = null;
+
 let getPastGame = function (gameId: number): CornholeGame {
-    let pastGames = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES);
-    if (pastGames.has(gameId)) {
-        return CornholeGame.fromJson(pastGames.get(gameId));
+    // let pastGames = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES);
+    if (historicalGameCache === null) {
+        historicalGameCache = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES)
+    }
+    // let pastGames = historicalGameCache;
+    if (historicalGameCache.has(gameId)) {
+        return CornholeGame.fromJson(historicalGameCache.get(gameId), true);
     }
     return null;
 }
@@ -272,4 +278,5 @@ let storePastGame = function (finishedGame: CornholeGame) {
     }
     pastGames.set(finishedGame.id, finishedGame);
     localStorage.setObject(HISTORICAL_GAMES, pastGames);
+    historicalGameCache = getPastGames();
 }

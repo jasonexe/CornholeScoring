@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<script src="ts_compile/fastclick.js"></script>
+<script lang="js">
+    if ('addEventListener' in document) {
+        document.addEventListener('DOMContentLoaded', function () {
+            FastClick.attach(document.body);
+        }, false);
+    }
+</script>
+<script src="ts_compile/game_management.js"></script>
+<script src="ts_compile/player_management.js"></script>
+<script src="ts_compile/window_management.js"></script>
+<script src="ts_compile/scoring.js"></script>
+<!-- <script type="module" src="./ts_compile/individual_stats.js"></script> -->
+<script src="ts_compile/map_util.js"></script>
+<script src="ts_compile/storage_util.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+<link href="css/graphs_style.css" rel="stylesheet" />
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J521EDC3RL"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-J521EDC3RL');
+        gtag('config', 'AW-801110251');
+        gtag('event', 'conversion', { 'send_to': 'AW-801110251/a-EsCPbC_d4DEOvx__0C' });
+    </script>
+</head>
+
+<body>
+    <section class="main">
+        <a href="player_history.html"><button>Back to Players</button></a>
+        <h1 id="playerName" class="capitalize"></h1>
+        <div id="summarizedStats">Todo: Add summary (basically the same as the player summary page)</div>
+        <div id="averagePerFrameDiv">
+            <hr>
+            <h2>Average per Frame</h2>
+        </div>
+        <div id="holePercentDiv">
+            <hr>
+            <h2>Hole Percentage</h2>
+        </div>
+        <div id="totalFramesDiv">
+            <hr>
+            <h2>Total Frames</h2>
+        </div>
+        <div id="boardPercentDiv">
+            <hr>
+            <h2>Board Percentage</h2>
+        </div>
+        <div id="cornholesDiv">
+            <hr>
+            <h2>Cornholes</h2>
+        </div>
+    </section>
+</body>
+
+
+<!-- For some reason, I can't get modules to work with typescript. I gave up and put the code here :) -->
+<script type="module">
+    import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+    let loadPage = function () {
+        document.getElementById("playerName").innerHTML = urlPlayerName();
+        let player = getPlayer(urlPlayerName());
+        let gameStatsData = [];
+
+        for (let game of player.games) {
+            let gameStats = player.getGameStats(game[0]);
+            gameStatsData.push(gameStats);
+        }
+        populateSummarizedStats(gameStatsData);
+        populateAveragePerFrame(gameStatsData);
+        populateHolePercentage(gameStatsData);
+        populateTotalFrames(gameStatsData);
+        populateBoardPercentage(gameStatsData);
+        populateCornholes(gameStatsData);
+    }
+
+    let populateSummarizedStats = function (gameStatsData) {
+        let summarizedDiv = document.getElementById("summarizedStats");
+        let totalCornholes = 0;
+        for(let gameStats of gameStatsData) {
+            totalCornholes += gameStats.cornholes;
+        }
+        summarizedDiv.innerHTML = totalCornholes + " Cornholes";
+    }
+
+    // Set dimensions for each SVG
+    // const width = 800;
+    const marginTop = 20;
+    const marginRight = 20;
+    const marginBottom = 70;
+    const marginLeft = 70;
+    const width = document.getElementsByClassName("main")[0].clientWidth * .7;
+    const height = 350;
+
+    let populateAveragePerFrame = function (gameStatsData) {
+        const DIV_ID = "averagePerFrameDiv"
+        const Y_AXIS_LABEL = "Average Per Frame";
+        const GET_STAT_FUNCTION = function (data) { return data.averagePerFrame };
+        const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.averagePerFrame + " points" };
+        const tooltip = createTooltip("#" + DIV_ID);
+        // Create the SVG container.
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
+
+        // Create scales to map data values to visual properties
+        const xScale = d3.scaleBand()
+            .domain(gameStatsData.map(d => new Date(d.gameTime)))
+            .range([marginLeft, width - marginRight])
+            .padding(0.1);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(gameStatsData, GET_STAT_FUNCTION) + 2]) // 0 to 12 points per frame possible
+            .range([height - marginBottom, marginTop]);
+
+        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, GET_STAT_FUNCTION, GET_TOOLTIP_LABEL_FUNCTION)
+        populateXAxisLabels(svg, xScale);
+
+        const yAxis = d3.axisLeft(yScale);
+        svg.append("g")
+            .attr("transform", `translate(${marginLeft},0)`)
+            .call(yAxis);
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 20)
+            .attr("x", -height / 2) // Position to the left of the y-axis
+            .attr("text-anchor", "middle")
+            .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
+
+        // Append the SVG element.
+        const mainData = document.getElementById(DIV_ID);
+        mainData.append(svg.node());
+    }
+
+    let populateHolePercentage = function (gameStatsData) {
+        let mainData = document.getElementById("holePercentDiv");
+        const Y_AXIS_LABEL = "Hole Percentage";
+
+        const tooltip = createTooltip("#holePercentDiv");
+        // Create the SVG container.
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
+
+        // Create scales to map data values to visual properties
+        const xScale = d3.scaleBand()
+            .domain(gameStatsData.map(d => new Date(d.gameTime)))
+            .range([marginLeft, width - marginRight])
+            .padding(0.1);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(gameStatsData, d => d.holePercentage) + 15]) // Only do 15% over the max so it's more readable
+            .nice()
+            .range([height - marginBottom, marginTop]);
+
+        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, function (d) { return d.holePercentage }, function (d) { return d.holePercentage + "%" })
+        populateXAxisLabels(svg, xScale);
+
+        const yAxis = d3.axisLeft(yScale);
+        svg.append("g")
+            .attr("transform", `translate(${marginLeft},0)`)
+            .call(yAxis);
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 20)
+            .attr("x", -height / 2) // Position to the left of the y-axis
+            .attr("text-anchor", "middle")
+            .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
+
+        // Append the SVG element.
+        mainData.append(svg.node());
+    }
+
+    let populateBoardPercentage = function (gameStatsData) {
+        const DIV_ID = "boardPercentDiv"
+        const Y_AXIS_LABEL = "Board Percentage";
+        const GET_STAT_FUNCTION = function (data) { return data.boardPercentage };
+        const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.boardPercentage + "%" };
+        const tooltip = createTooltip("#" + DIV_ID);
+        // Create the SVG container.
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
+
+        // Create scales to map data values to visual properties
+        const xScale = d3.scaleBand()
+            .domain(gameStatsData.map(d => new Date(d.gameTime)))
+            .range([marginLeft, width - marginRight])
+            .padding(0.1);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, 100]) // 0 to 12 points per frame possible
+            .range([height - marginBottom, marginTop]);
+
+        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, GET_STAT_FUNCTION, GET_TOOLTIP_LABEL_FUNCTION)
+        populateXAxisLabels(svg, xScale);
+
+        const yAxis = d3.axisLeft(yScale);
+        svg.append("g")
+            .attr("transform", `translate(${marginLeft},0)`)
+            .call(yAxis);
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 20)
+            .attr("x", -height / 2) // Position to the left of the y-axis
+            .attr("text-anchor", "middle")
+            .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
+
+        // Append the SVG element.
+        const mainData = document.getElementById(DIV_ID);
+        mainData.append(svg.node());
+    }
+
+    let populateTotalFrames = function (gameStatsData) {
+        let mainData = document.getElementById("totalFramesDiv");
+        const Y_AXIS_LABEL = "Total Frames";
+
+        const tooltip = createTooltip("#totalFramesDiv");
+        // Create the SVG container.
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
+
+        // Create scales to map data values to visual properties
+        const xScale = d3.scaleBand()
+            .domain(gameStatsData.map(d => new Date(d.gameTime)))
+            .range([marginLeft, width - marginRight])
+            .padding(0.1);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(gameStatsData, d => d.totalFrames) + 2]) // Assuming values for the chosen statistic are between 0 and 100
+            .range([height - marginBottom, marginTop]);
+
+        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, function (d) { return d.totalFrames }, function (d) { return d.totalFrames })
+        populateXAxisLabels(svg, xScale);
+
+        const yAxis = d3.axisLeft(yScale);
+        svg.append("g")
+            .attr("transform", `translate(${marginLeft},0)`)
+            .call(yAxis);
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 20)
+            .attr("x", -height / 2) // Position to the left of the y-axis
+            .attr("text-anchor", "middle")
+            .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
+
+        // Append the SVG element.
+        mainData.append(svg.node());
+    }
+
+    let populateCornholes = function (gameStatsData) {
+        const DIV_ID = "cornholesDiv"
+        const Y_AXIS_LABEL = "Cornholes";
+        const GET_STAT_FUNCTION = function (data) { return data.cornholes };
+        const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.cornholes };
+        const tooltip = createTooltip("#" + DIV_ID);
+        // Create the SVG container.
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
+
+        // Create scales to map data values to visual properties
+        const xScale = d3.scaleBand()
+            .domain(gameStatsData.map(d => new Date(d.gameTime)))
+            .range([marginLeft, width - marginRight])
+            .padding(0.1);
+
+        // TODO(jason) Figure out how to make this only show whole numbers.
+        // Maybe .tickFormat(d3.format("d")) but it gives an error right now
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(gameStatsData, d => d.cornholes)])
+            .range([height - marginBottom, marginTop]);
+
+        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, GET_STAT_FUNCTION, GET_TOOLTIP_LABEL_FUNCTION)
+        populateXAxisLabels(svg, xScale);
+
+        const yAxisTicks = yScale.ticks()
+            .filter(tick => Number.isInteger(tick));
+        const yAxis = d3.axisLeft(yScale)
+            .tickValues(yAxisTicks)
+            .tickFormat(d3.format('d'));
+        svg.append("g")
+            .attr("transform", `translate(${marginLeft},0)`)
+            .call(yAxis);
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 20)
+            .attr("x", -height / 2) // Position to the left of the y-axis
+            .attr("text-anchor", "middle")
+            .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
+
+        // Append the SVG element.
+        const mainData = document.getElementById(DIV_ID);
+        mainData.append(svg.node());
+    }
+
+    let createBarChart = function (svg, xScale, yScale, gameStatsData, tooltip, getStat, getTooltipLabel) {
+        // Create the bar chart and trajectory for the single player
+        svg.selectAll("rect")
+            .data(gameStatsData) // Directly use the single player's data
+            .enter()
+            .append("rect")
+            .attr("x", d => xScale(new Date(d.gameTime)))
+            .attr("y", d => yScale(getStat(d))) // Adjust based on chosen statistic
+            .attr("width", xScale.bandwidth())
+            .attr("height", d => yScale(0) - yScale(getStat(d)))
+            .attr("fill", d => d.playerWon ? "green" : "steelblue") // TODO(jason) If they won, fill it green. If they lost, blue
+            .on("mouseover", function (event, d) {
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", 0.9);
+                const barY = d3.select(this).attr("y"); // Get y-coordinate of the bar
+                const barX = d3.select(this).attr("x"); // Get x-coordinate of the bar
+                const tooltipTop = barY - (tooltip.node().offsetHeight * 2) + marginBottom; // Adjust offset as needed
+                const tooltipLeft = parseInt(barX) + xScale.bandwidth() / 2 - 13;
+                tooltip.html(`${getTooltipLabel(d)}`) // Adjust content as needed
+                    .style("left", tooltipLeft + "px")
+                    .style("top", tooltipTop + "px");
+            })
+            .on("mouseout", function () {
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            })
+            .on("click", function (event, d) {
+                location.href = "./game_summary.html?gameId=" + d.gameTime;
+            });
+        svg.selectAll("rect")
+            .style("cursor", "pointer");
+    }
+
+    let createTooltip = function (mainContainerName) {
+        return d3.select(mainContainerName)
+            .append("div")
+            .attr("class", "tooltip")
+            .style("position", "relative")
+            .style("opacity", 0)
+            .style("width", "fit-content")
+            .html("%"); // Initially hidden
+    }
+
+    let populateXAxisLabels = function (svg, xScale) {
+        // Add axes for reference
+        const xAxis = d3.axisBottom(xScale)
+            .tickFormat(d3.timeFormat("%Y-%m-%d"));
+        svg.append("g")
+            .attr("transform", `translate(0, ${height - marginBottom})`)
+            .call(xAxis)
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-45)");
+
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", height - 10) // Position below the x-axis
+            .attr("text-anchor", "middle")
+            .text("Game Date"); // Label for x-axis
+    }
+
+    let urlPlayerName = function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("playerName")) {
+            return urlParams.get("playerName");
+        }
+        return "Error Retrieving Player";
+    }
+    document.querySelector('body').onload = loadPage();
+</script>
+
+</html>

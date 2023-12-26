@@ -70,7 +70,11 @@
         let gameStatsData = [];
 
         for (let game of player.games) {
+            // Skip empty games
             let gameStats = player.getGameStats(game[0]);
+            if (!gameStats) {
+                continue;
+            }
             gameStatsData.push(gameStats);
         }
         populateSummarizedStats(gameStatsData);

@@ -34,7 +34,11 @@ class CornholePlayer {
         this.updateStorage();
     }
     getGameStats(gameId) {
-        return new GameStatsForPlayer(getPastGame(gameId), this.name);
+        let pastGame = getPastGame(gameId);
+        if (!pastGame) {
+            return null;
+        }
+        return new GameStatsForPlayer(pastGame, this.name);
     }
     addFrameToGame(gameId, frame) {
         let gameFrameArray = this.games.get(gameId);

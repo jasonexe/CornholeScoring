@@ -43,7 +43,11 @@ class CornholePlayer {
     }
 
     getGameStats(gameId: number): GameStatsForPlayer {
-        return new GameStatsForPlayer(getPastGame(gameId), this.name);
+        let pastGame = getPastGame(gameId);
+        if (!pastGame) {
+            return null;
+        }
+        return new GameStatsForPlayer(pastGame, this.name);
     }
 
     addFrameToGame(gameId: number, frame: IndividualFrame) {

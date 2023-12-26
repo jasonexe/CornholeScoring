@@ -33,7 +33,9 @@ const updatePlayerSelectionList = function (initialize: boolean) {
     if (getPastGames() && initialize) {
         mostRecentGame = [...getPastGames().entries()].reduce(
             (firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
-    } else {
+    } else if (!initialize) {
+        // Only do this if the page is not being initialized - if this is called when initialize is true (IE: getPastGames() is null) then
+        // we get an error because there's no selected option
         // "mostRecentGame" is a fake game, with players whose names are currently in the selectors
         let teamOnePlayerOne = (<HTMLSelectElement>document.getElementById("team_one_player_one")).selectedOptions[0].value;
         let teamOnePlayerTwo = (<HTMLSelectElement>document.getElementById("team_one_player_two")).selectedOptions[0].value;

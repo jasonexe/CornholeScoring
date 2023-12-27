@@ -153,16 +153,21 @@ class GameStatsForPlayer {
         this.gameTime = game.id
         this.playerName = playerName;
         let teamSide: TeamSide;
+        let oppositeTeam: TeamSide;
         let playerOrder = game.leftTeam.findIndex((player) => player.name === playerName); // Set to 0 or 1, depending if they went 1st or second for their team.
         if (playerOrder >= 0) {
             teamSide = TeamSide.LEFT;
+            oppositeTeam = TeamSide.RIGHT;
             this.playerWon = game.currentScore.leftCalculatedScore >= 21;
         } else {
             playerOrder = game.rightTeam.findIndex((player) => player.name === playerName)
             teamSide = TeamSide.RIGHT;
+            oppositeTeam = TeamSide.LEFT;
             this.playerWon = game.currentScore.rightCalculatedScore >= 21;
         }
-        let mainPlayerSummary = this.getSummary(game.pastFrames, teamSide, playerOrder);
+        let mainPlayerSummary = this.getSummary(game.pastFrames, teamSide, playerOrder, true);
+        let opponentSummary = this.getSummary(game.pastFrames, oppositeTeam, playerOrder, false);
+        this.comparedToOpponent = (mainPlayerSummary.numHoles * 3 + mainPlayerSummary.numBoards) - (opponentSummary.numHoles * 3 + opponentSummary.numBoards)
         this.holePercentage = mainPlayerSummary.getHolePercentage();
         this.boardPercentage = mainPlayerSummary.getBoardPercentage();
         this.potentialPointPercentage = mainPlayerSummary.getPotentialPointPercentage();
@@ -172,7 +177,7 @@ class GameStatsForPlayer {
         this.averagePerFrame = (Math.round((averageScorePerFrame + Number.EPSILON) * 100) / 100);
     }
 
-    getSummary(frames: CornholeFrame[], teamSide: TeamSide, playerOrder: number): GameSummary {
+    getSummary(frames: CornholeFrame[], teamSide: TeamSide, playerOrder: number, countCornholes: boolean): GameSummary {
         let summary = new GameSummary();
         frames = frames.filter((element, index) => {
             return index % 2 === playerOrder;
@@ -198,7 +203,7 @@ class GameStatsForPlayer {
                     }
                     break;
             }
-            if (numHoles === 4) {
+            if (numHoles === 4 && countCornholes) {
                 this.cornholes += 1;
             }
         }

@@ -53,6 +53,10 @@
             <hr>
             <h2>Board Percentage</h2>
         </div>
+        <div id="comparedToOpponentDiv">
+            <hr>
+            <h2>Points Compared to Opponents</h2>
+        </div>
         <div id="cornholesDiv">
             <hr>
             <h2>Cornholes</h2>
@@ -82,13 +86,14 @@
         populateHolePercentage(gameStatsData);
         populateTotalFrames(gameStatsData);
         populateBoardPercentage(gameStatsData);
+        populateComparedToOpponent(gameStatsData);
         populateCornholes(gameStatsData);
     }
 
     let populateSummarizedStats = function (gameStatsData) {
         let summarizedDiv = document.getElementById("summarizedStats");
         let totalCornholes = 0;
-        for(let gameStats of gameStatsData) {
+        for (let gameStats of gameStatsData) {
             totalCornholes += gameStats.cornholes;
         }
         summarizedDiv.innerHTML = totalCornholes + " Cornholes";
@@ -272,6 +277,50 @@
         mainData.append(svg.node());
     }
 
+    let populateComparedToOpponent = function (gameStatsData) {
+        const DIV_ID = "comparedToOpponentDiv"
+        const Y_AXIS_LABEL = "Difference Between Opponent";
+        const GET_STAT_FUNCTION = function (data) { return data.comparedToOpponent };
+        const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.comparedToOpponent + " points" };
+        const tooltip = createTooltip("#" + DIV_ID);
+        // Create the SVG container.
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
+
+        // Create scales to map data values to visual properties
+        const xScale = d3.scaleBand()
+            .domain(gameStatsData.map(d => new Date(d.gameTime)))
+            .range([marginLeft, width - marginRight])
+            .padding(0.1);
+
+        const yScale = d3.scaleLinear()
+            .domain([d3.min(gameStatsData, GET_STAT_FUNCTION) - 2, d3.max(gameStatsData, GET_STAT_FUNCTION) + 2]) // 0 to 12 points per frame possible
+            .range([height - marginBottom, marginTop]);
+
+        console.log(yScale);
+        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, GET_STAT_FUNCTION, GET_TOOLTIP_LABEL_FUNCTION)
+        populateXAxisLabels(svg, xScale);
+
+        const yAxis = d3.axisLeft(yScale);
+        svg.append("g")
+            .attr("transform", `translate(${marginLeft},0)`)
+            .call(yAxis);
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 20)
+            .attr("x", -height / 2) // Position to the left of the y-axis
+            .attr("text-anchor", "middle")
+            .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
+
+        // Append the SVG element.
+        const mainData = document.getElementById(DIV_ID);
+        mainData.append(svg.node());
+    }
+
     let populateCornholes = function (gameStatsData) {
         const DIV_ID = "cornholesDiv"
         const Y_AXIS_LABEL = "Cornholes";
@@ -291,8 +340,6 @@
             .range([marginLeft, width - marginRight])
             .padding(0.1);
 
-        // TODO(jason) Figure out how to make this only show whole numbers.
-        // Maybe .tickFormat(d3.format("d")) but it gives an error right now
         const yScale = d3.scaleLinear()
             .domain([0, d3.max(gameStatsData, d => d.cornholes)])
             .range([height - marginBottom, marginTop]);
@@ -323,15 +370,22 @@
 
     let createBarChart = function (svg, xScale, yScale, gameStatsData, tooltip, getStat, getTooltipLabel) {
         // Create the bar chart and trajectory for the single player
+        console.log(yScale(0) + " is 0");
         svg.selectAll("rect")
             .data(gameStatsData) // Directly use the single player's data
             .enter()
             .append("rect")
             .attr("x", d => xScale(new Date(d.gameTime)))
-            .attr("y", d => yScale(getStat(d))) // Adjust based on chosen statistic
+            // .attr("y", d => yScale(getStat(d))) // Adjust based on chosen statistic
+            .attr("y", function (d) {
+                if (getStat(d) < 0) {
+                    return yScale(0);
+                }
+                return yScale(getStat(d));
+            }) // Adjust based on chosen statistic
             .attr("width", xScale.bandwidth())
-            .attr("height", d => yScale(0) - yScale(getStat(d)))
-            .attr("fill", d => d.playerWon ? "green" : "steelblue") // TODO(jason) If they won, fill it green. If they lost, blue
+            .attr("height", d => Math.abs(yScale(0) - yScale(getStat(d))))
+            .attr("fill", d => d.playerWon ? "green" : "steelblue")
             .on("mouseover", function (event, d) {
                 tooltip.transition()
                     .duration(200)

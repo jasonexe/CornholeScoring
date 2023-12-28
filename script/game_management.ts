@@ -55,7 +55,7 @@ class CornholeGame {
     }
 
     // Constructs the whole class given a base from JSON parsing
-    static fromJson(baseGame: CornholeGame, pulledFromStorage: boolean): CornholeGame {
+    static fromJson(baseGame: CornholeGame, pulledFromLocalStorage: boolean): CornholeGame {
         let leftPlayers = new Array<CornholePlayer>();
         for (let leftPlayer of baseGame.leftTeam) {
             leftPlayers.push(CornholePlayer.fromJson(leftPlayer));
@@ -64,7 +64,7 @@ class CornholeGame {
         for (let rightPlayer of baseGame.rightTeam) {
             rightPlayers.push(CornholePlayer.fromJson(rightPlayer));
         }
-        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, !pulledFromStorage);
+        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, !pulledFromLocalStorage);
         gameWithFunctions.id = baseGame.id;
         let pastFrames = new Array<CornholeFrame>();
         for (let pastFrame of baseGame.pastFrames) {
@@ -258,12 +258,10 @@ let getPastGames = function (): Map<number, CornholeGame> {
 let historicalGameCache = null;
 
 let getPastGame = function (gameId: number): CornholeGame {
-    // let pastGames = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES);
     if (historicalGameCache === null) {
         historicalGameCache = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES)
     }
-    // let pastGames = historicalGameCache;
-    if (historicalGameCache.has(gameId)) {
+    if (historicalGameCache !== null && historicalGameCache.has(gameId)) {
         return CornholeGame.fromJson(historicalGameCache.get(gameId), true);
     }
     return null;
@@ -276,7 +274,11 @@ let storePastGame = function (finishedGame: CornholeGame) {
         localStorage.setObject(HISTORICAL_GAMES, new Map<number, CornholeGame>().set(finishedGame.id, finishedGame));
         return;
     }
+    if (pastGames.get(finishedGame.id)) {
+        // No need to do anything if there's already a game ID stored.
+        return;
+    }
     pastGames.set(finishedGame.id, finishedGame);
     localStorage.setObject(HISTORICAL_GAMES, pastGames);
-    historicalGameCache = getPastGames();
+    historicalGameCache = pastGames;
 }

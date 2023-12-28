@@ -185,7 +185,7 @@ let setupPlayerHistoryPage = function () {
         let nameTitle = createHeader3WithText(player[1].name);
         nameTitle.classList.add("capitalize", "center_text");
         let nameTitleLink = document.createElement("a");
-        nameTitleLink.setAttribute("href", "./individual_stats.html?playerName=" + player[1].name);
+        nameTitleLink.setAttribute("href", "./individual_stats.html?playerName=" + player[1].name.replace(/ /g, "%20"));
         nameTitleLink.setAttribute("target", "_blank");
         nameTitleLink.appendChild(nameTitle);
         playerSection.append(nameTitleLink);

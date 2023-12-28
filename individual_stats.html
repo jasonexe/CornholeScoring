@@ -2,6 +2,18 @@
 <html>
 <script src="ts_compile/fastclick.js"></script>
 <script lang="js">
+    const PLAYER_RECORD_PATH = 'sharedPlayerRecords/';
+    const firebaseConfig = {
+        // Get the config from here instead of pushing to GitHub for now: https://console.firebase.google.com/u/0/project/scorehole/settings/general/web:M2JkZGE0YzUtMDY2Ny00OWU4LWJlZTUtZmEzYTYzYTA5ZGY5
+        apiKey: "AIzaSyBTnRlaSGfP9Hzk0YhfdwDRmaNSzfrmDy0",
+        authDomain: "scorehole.firebaseapp.com",
+        databaseURL: "https://scorehole-default-rtdb.firebaseio.com",
+        projectId: "scorehole",
+        storageBucket: "scorehole.appspot.com",
+        messagingSenderId: "30214043784",
+        appId: "1:30214043784:web:f081b1e00f626e469e873d",
+        measurementId: "G-C6Y8B7WYG8"
+    };
     if ('addEventListener' in document) {
         document.addEventListener('DOMContentLoaded', function () {
             FastClick.attach(document.body);
@@ -37,6 +49,7 @@
         <a href="player_history.html"><button>Back to Players</button></a>
         <h1 id="playerName" class="capitalize"></h1>
         <div id="summarizedStats">Todo: Add summary (basically the same as the player summary page)</div>
+        <div><button id="shareLink">Share User Stats</button></div>
         <div id="averagePerFrameDiv">
             <hr>
             <h2>Average per Frame</h2>
@@ -64,13 +77,71 @@
     </section>
 </body>
 
+<script type="module">
+    import * as fp from 'https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4.2.1/+esm'
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+    // Initialize Firebase
+    const setApp = initializeApp(firebaseConfig);
+    const setDatabase = getDatabase(setApp);
+
+    // Get the visitor identifier - this is unique to the browser, so even if 2 people have
+    // same-named people, the shared link won't
+    const fingerprintId = fp.load().then(fp => fp.get())
+        .then(result => {
+            // This is the visitor identifier:
+            return result.visitorId
+        })
+
+    let createShareableUserLink = async function () {
+        const resolvedId = await fingerprintId;
+        let storedPlayerId = urlPlayerName() + "_-_" + resolvedId;
+        let games = [];
+        for (let gameFrame of getPlayer(urlPlayerName()).games) {
+            let pastGame = getPastGame(gameFrame[0]);
+            if (!pastGame || pastGame.pastFrames.length === 0) {
+                continue;
+            }
+            games.push(getPastGame(gameFrame[0]));
+        }
+        set(ref(setDatabase, PLAYER_RECORD_PATH + storedPlayerId), games);
+        navigator.clipboard
+            .writeText("scorehole.com/individual_stats.html?storedPlayerRecord=" + storedPlayerId)
+            .then(() => {
+                alert("URL copied to clipboard");
+            }).catch(() => {
+                alert("Something went wrong");
+            });
+    }
+    document.querySelector('#shareLink').onclick = function () { createShareableUserLink() };
+</script>
 
 <!-- For some reason, I can't get modules to work with typescript. I gave up and put the code here :) -->
 <script type="module">
     import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+    import * as fp from 'https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4.2.1/+esm'
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    // Initialize Firebase
+    const getApp = initializeApp(firebaseConfig);
+    const getInfoDatabase = getDatabase(getApp);
+
     let loadPage = function () {
-        document.getElementById("playerName").innerHTML = urlPlayerName();
-        let player = getPlayer(urlPlayerName());
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("playerName")) {
+            let playerName = urlPlayerName();
+            let player = getPlayer(playerName);
+            displayStatsForPlayer(player);
+        } else if (urlParams.has("storedPlayerRecord")) {
+            const recordId = urlParams.get("storedPlayerRecord");
+            // Get player records from database, populate into local storage
+            loadEntirePlayerRecord(recordId);
+        }
+    }
+
+    let displayStatsForPlayer = function (player) {
+        document.getElementById("playerName").innerHTML = player.name;
         let gameStatsData = [];
 
         for (let game of player.games) {
@@ -88,6 +159,31 @@
         populateBoardPercentage(gameStatsData);
         populateComparedToOpponent(gameStatsData);
         populateCornholes(gameStatsData);
+    }
+
+    let loadEntirePlayerRecord = function (playerRecordId) {
+        let playerName = playerRecordId.substring(0, playerRecordId.lastIndexOf("_-_"));
+        get(child(ref(getInfoDatabase), PLAYER_RECORD_PATH + playerRecordId)).then((snapshot) => {
+            for (let gamePrimitive of snapshot.val()) {
+                if (getPastGame(gamePrimitive.id)) {
+                    // If the past game is already stored, we don't
+                    // need to process it
+                    continue;
+                }
+                let gameObject = CornholeGame.fromJson(gamePrimitive, /* pulledFromLocalStorage= */ true);
+                // Update the game objects for each of the players, which basically sets
+                // the IndividualFrame arrays on the Player. fromJson will register the
+                // games on them.
+                for (let leftPlayer of gameObject.leftTeam) {
+                    leftPlayer.addFramesFromGame(gameObject);
+                }
+                for (let rightPlayer of gameObject.rightTeam) {
+                    rightPlayer.addFramesFromGame(gameObject);
+                }
+                storePastGame(gameObject);
+            }
+            displayStatsForPlayer(getPlayer(playerName));
+        });
     }
 
     let populateSummarizedStats = function (gameStatsData) {
@@ -281,7 +377,7 @@
         const DIV_ID = "comparedToOpponentDiv"
         const Y_AXIS_LABEL = "Difference Between Opponent";
         const GET_STAT_FUNCTION = function (data) { return data.comparedToOpponent };
-        const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.comparedToOpponent + " points" };
+        const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.comparedToOpponent + " points vs <span class='capitalize'>" + data.opponentName + "</span>" };
         const tooltip = createTooltip("#" + DIV_ID);
         // Create the SVG container.
         const svg = d3.create("svg")
@@ -300,8 +396,7 @@
             .domain([d3.min(gameStatsData, GET_STAT_FUNCTION) - 2, d3.max(gameStatsData, GET_STAT_FUNCTION) + 2]) // 0 to 12 points per frame possible
             .range([height - marginBottom, marginTop]);
 
-        console.log(yScale);
-        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, GET_STAT_FUNCTION, GET_TOOLTIP_LABEL_FUNCTION)
+        createBarChart(svg, xScale, yScale, gameStatsData, tooltip, GET_STAT_FUNCTION, GET_TOOLTIP_LABEL_FUNCTION, /* spansZero= */ true)
         populateXAxisLabels(svg, xScale);
 
         const yAxis = d3.axisLeft(yScale);
@@ -368,9 +463,17 @@
         mainData.append(svg.node());
     }
 
-    let createBarChart = function (svg, xScale, yScale, gameStatsData, tooltip, getStat, getTooltipLabel) {
+    let createBarChart = function (svg, xScale, yScale, gameStatsData, tooltip, getStat, getTooltipLabel, spansZero) {
         // Create the bar chart and trajectory for the single player
-        console.log(yScale(0) + " is 0");
+        let minimumScale = 0;
+        // If the chart might not include 0, then get the number closest to 0 (max if everything is negative, min if not)
+        if (spansZero) {
+            if (d3.min(gameStatsData, getStat) - 2 > 0) {
+                minimumScale = d3.min(gameStatsData, getStat) - 2
+            } else if (d3.max(gameStatsData, getStat) + 2 < 0) {
+                minimumScale = d3.max(gameStatsData, getStat) + 2;
+            }
+        }
         svg.selectAll("rect")
             .data(gameStatsData) // Directly use the single player's data
             .enter()
@@ -384,7 +487,7 @@
                 return yScale(getStat(d));
             }) // Adjust based on chosen statistic
             .attr("width", xScale.bandwidth())
-            .attr("height", d => Math.abs(yScale(0) - yScale(getStat(d))))
+            .attr("height", d => Math.abs(yScale(minimumScale) - yScale(getStat(d))))
             .attr("fill", d => d.playerWon ? "green" : "steelblue")
             .on("mouseover", function (event, d) {
                 tooltip.transition()
@@ -392,9 +495,10 @@
                     .style("opacity", 0.9);
                 const barY = d3.select(this).attr("y"); // Get y-coordinate of the bar
                 const barX = d3.select(this).attr("x"); // Get x-coordinate of the bar
+                tooltip.html(`${getTooltipLabel(d)}`)
                 const tooltipTop = barY - (tooltip.node().offsetHeight * 2) + marginBottom; // Adjust offset as needed
-                const tooltipLeft = parseInt(barX) + xScale.bandwidth() / 2 - 13;
-                tooltip.html(`${getTooltipLabel(d)}`) // Adjust content as needed
+                const tooltipLeft = parseInt(barX) + xScale.bandwidth() / 2 - (tooltip.node().offsetWidth / 2);
+                tooltip // Adjust content as needed
                     .style("left", tooltipLeft + "px")
                     .style("top", tooltipTop + "px");
             })
@@ -438,14 +542,6 @@
             .attr("y", height - 10) // Position below the x-axis
             .attr("text-anchor", "middle")
             .text("Game Date"); // Label for x-axis
-    }
-
-    let urlPlayerName = function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has("playerName")) {
-            return urlParams.get("playerName");
-        }
-        return "Error Retrieving Player";
     }
     document.querySelector('body').onload = loadPage();
 </script>

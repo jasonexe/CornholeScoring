@@ -165,7 +165,6 @@
                 + rightNameTwo.replaceAll(" ", "¯");
 
             set(ref(database, 'games/' + storedGameId), game);
-            // TODO: set players/... for each player + gameId
             for (let playerName of playerNames) {
                 set(ref(database,
                     "playerFrames/" + playerName + SHARING_ID_SEPARATOR + game.id),
@@ -194,10 +193,8 @@
                 }
                 Promise.all(promises).then((snapshots) => {
                     let game = CornholeGame.fromJson(snapshots[0].val(), false);
-                    // playerGameData = new Map();
                     for (let playerFrame of snapshots.slice(1)) {
                         let playerName = playerFrame.key.substring(0, playerFrame.key.indexOf(SHARING_ID_SEPARATOR));
-                        // playerGameData.set(playerName, playerFrame.val());
                         addGameToPlayer(gameStartTime, playerName, playerFrame.val());
                         game.updatePlayer(getPlayer(playerName));
                     }

@@ -147,6 +147,7 @@ class GameStatsForPlayer {
     // Average of this player - average of their opponent
     comparedToOpponent: number = 0;
     playerWon: boolean = false;
+    opponentName: string = "";
 
     constructor(game: CornholeGame, playerName: string) {
         // Calculate all the statistics from the game for the given player
@@ -159,11 +160,13 @@ class GameStatsForPlayer {
             teamSide = TeamSide.LEFT;
             oppositeTeam = TeamSide.RIGHT;
             this.playerWon = game.currentScore.leftCalculatedScore >= 21;
+            this.opponentName = game.rightTeam[playerOrder].name;
         } else {
             playerOrder = game.rightTeam.findIndex((player) => player.name === playerName)
             teamSide = TeamSide.RIGHT;
             oppositeTeam = TeamSide.LEFT;
             this.playerWon = game.currentScore.rightCalculatedScore >= 21;
+            this.opponentName = game.leftTeam[playerOrder].name;
         }
         let mainPlayerSummary = this.getSummary(game.pastFrames, teamSide, playerOrder, true);
         let opponentSummary = this.getSummary(game.pastFrames, oppositeTeam, playerOrder, false);

@@ -78,7 +78,36 @@ class CornholePlayer {
         this.updateStorage();
     }
 
+    addFramesFromGame(game: CornholeGame) {
+        if (this.games.get(game.id) && this.games.get(game.id).length > 0) {
+            // Return early and don't update storage if the game frames already exist
+            return;
+        }
+        let playerIndex: number;
+        let playerSide: TeamSide;
+        let leftMoveIndex = game.leftTeam.findIndex((player) => player.name === this.name);
+        if (leftMoveIndex >= 0) {
+            playerIndex = leftMoveIndex;
+            playerSide = TeamSide.LEFT;
+        } else {
+            playerIndex = game.rightTeam.findIndex((player) => player.name === this.name);
+            playerSide = TeamSide.RIGHT;
+        }
+
+        let frames = game.pastFrames.filter((element, index) => {
+            return index % 2 === playerIndex;
+        })
+        for (let frame of frames) {
+            this.addFrameToGame(game.id, new IndividualFrame(frame, playerSide));
+        }
+        this.updateStorage();
+    }
+
     addFullGame(gameId: number, allFrames: Array<IndividualFrame>) {
+        if (this.games.get(gameId).length > 0) {
+            // Return early and don't update storage if the game frames already exist
+            return;
+        }
         this.games.set(gameId, allFrames);
         this.updateStorage();
     }
@@ -124,6 +153,14 @@ let addGameToPlayer = function(gameId: number, playerName: string, allFrames: Ar
         let newPlayer = new CornholePlayer(playerName, false);
         newPlayer.addFullGame(gameId, allFrames);
     }
+}
+
+let urlPlayerName = function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("playerName")) {
+        return urlParams.get("playerName");
+    }
+    return "Error Retrieving Player";
 }
 
 let getPlayer = function (playerName: string): CornholePlayer {

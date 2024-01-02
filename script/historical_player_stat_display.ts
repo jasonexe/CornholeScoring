@@ -134,6 +134,9 @@ let getPlayerAggregateData = function (player: CornholePlayer) {
 // This is set at the start of setupPlayerHistoryPage()
 let pastGamesCache = undefined;
 let getPlayerWins = function (player: CornholePlayer, startDate: Date, endDate: Date) {
+    if (!pastGamesCache) {
+        pastGamesCache = getPastGames();
+    }
     // Determine if the user won the game
     let totalWins = 0;
     for (let gameInfo of player.games) {
@@ -196,32 +199,7 @@ let setupPlayerHistoryPage = function () {
             + "<br>Frames Played: " + aggregateData.totalFrames,
             /* bold= */ false));
 
-        let tableContainer = document.createElement("table");
-        let titleRow = document.createElement("tr");
-        titleRow.append(createTableDataWithText("Total", false));
-        titleRow.append(createTableDataWithText("Holes", false));
-        titleRow.append(createTableDataWithText("Boards", false));
-        titleRow.append(createTableDataWithText("Misses", false));
-        titleRow.append(createTableDataWithText("Avg/Frame", false));
-        tableContainer.append(titleRow);
-
-        let percentageRow = document.createElement("tr");
-        percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalHoles * 3 + aggregateData.totalBoards) / (aggregateData.totalThrown * 3)) * 100).toString() + "%", true));
-        percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalHoles / aggregateData.totalThrown) * 100).toString() + "%", true));
-        percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalBoards / aggregateData.totalThrown) * 100).toString() + "%", true));
-        percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalThrown - (aggregateData.totalHoles + aggregateData.totalBoards)) / aggregateData.totalThrown) * 100).toString() + "%", true));
-        percentageRow.append(createTableDataWithText("N/A", true));
-        tableContainer.append(percentageRow);
-
-        let countRow = document.createElement("tr");
-        countRow.append(createTableDataWithText(((aggregateData.totalHoles * 3 + aggregateData.totalBoards)).toString(), true));
-        countRow.append(createTableDataWithText((aggregateData.totalHoles).toString(), true));
-        countRow.append(createTableDataWithText((aggregateData.totalBoards).toString(), true));
-        countRow.append(createTableDataWithText(((aggregateData.totalThrown - (aggregateData.totalHoles + aggregateData.totalBoards))).toString(), true));
-        let averageScorePerFrame = ((aggregateData.totalHoles * 3 + aggregateData.totalBoards) / (aggregateData.totalFrames));
-        countRow.append(createTableDataWithText((Math.round((averageScorePerFrame + Number.EPSILON) * 100) / 100).toString(), true));
-        tableContainer.append(countRow);
-
+        let tableContainer = getPlayerStatsTable(aggregateData)
         playerSection.append(tableContainer);
 
         playerSection.append(document.createElement("hr"));
@@ -232,6 +210,35 @@ let setupPlayerHistoryPage = function () {
             unarchivedContainer.append(playerSection);
         }
     }
+}
+
+let getPlayerStatsTable = function (aggregateData: PlayerData) {
+    let tableContainer = document.createElement("table");
+    let titleRow = document.createElement("tr");
+    titleRow.append(createTableDataWithText("Total", false));
+    titleRow.append(createTableDataWithText("Holes", false));
+    titleRow.append(createTableDataWithText("Boards", false));
+    titleRow.append(createTableDataWithText("Misses", false));
+    titleRow.append(createTableDataWithText("Avg/Frame", false));
+    tableContainer.append(titleRow);
+
+    let percentageRow = document.createElement("tr");
+    percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalHoles * 3 + aggregateData.totalBoards) / (aggregateData.totalThrown * 3)) * 100).toString() + "%", true));
+    percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalHoles / aggregateData.totalThrown) * 100).toString() + "%", true));
+    percentageRow.append(createTableDataWithText(Math.round((aggregateData.totalBoards / aggregateData.totalThrown) * 100).toString() + "%", true));
+    percentageRow.append(createTableDataWithText(Math.round(((aggregateData.totalThrown - (aggregateData.totalHoles + aggregateData.totalBoards)) / aggregateData.totalThrown) * 100).toString() + "%", true));
+    percentageRow.append(createTableDataWithText("N/A", true));
+    tableContainer.append(percentageRow);
+
+    let countRow = document.createElement("tr");
+    countRow.append(createTableDataWithText(((aggregateData.totalHoles * 3 + aggregateData.totalBoards)).toString(), true));
+    countRow.append(createTableDataWithText((aggregateData.totalHoles).toString(), true));
+    countRow.append(createTableDataWithText((aggregateData.totalBoards).toString(), true));
+    countRow.append(createTableDataWithText(((aggregateData.totalThrown - (aggregateData.totalHoles + aggregateData.totalBoards))).toString(), true));
+    let averageScorePerFrame = ((aggregateData.totalHoles * 3 + aggregateData.totalBoards) / (aggregateData.totalFrames));
+    countRow.append(createTableDataWithText((Math.round((averageScorePerFrame + Number.EPSILON) * 100) / 100).toString(), true));
+    tableContainer.append(countRow);
+    return tableContainer;
 }
 
 let displayArchivedPlayers = false;

@@ -23,8 +23,8 @@
 <script src="ts_compile/game_management.js"></script>
 <script src="ts_compile/player_management.js"></script>
 <script src="ts_compile/window_management.js"></script>
+<script src="ts_compile/historical_player_stat_display.js"></script>
 <script src="ts_compile/scoring.js"></script>
-<!-- <script type="module" src="./ts_compile/individual_stats.js"></script> -->
 <script src="ts_compile/map_util.js"></script>
 <script src="ts_compile/storage_util.js"></script>
 
@@ -42,12 +42,31 @@
         gtag('config', 'AW-801110251');
         gtag('event', 'conversion', { 'send_to': 'AW-801110251/a-EsCPbC_d4DEOvx__0C' });
     </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        .date-picker {
+            display: inline-block;
+        }
+    </style>
 </head>
 
 <body>
     <section class="main">
         <a href="player_history.html"><button>Back to Players</button></a>
         <h1 id="playerName" class="capitalize"></h1>
+        <div class="date-picker">
+            <input type="text" id="start-date" placeholder="Start Date">
+            <input type="text" id="end-date" placeholder="End Date">
+        </div>
+        <div>
+            Preload date range:
+            <select id="date-range-select" name="date_ranges" class="needsclick"
+                onchange="preloadDateRange(this.value);">
+                <option hidden disabled selected value> -- select an option -- </option>
+                <option value="__">Clear</option>
+            </select>
+        </div>
         <div id="summarizedStats">Todo: Add summary (basically the same as the player summary page)</div>
         <div><button id="shareLink">Share User Stats</button></div>
         <div id="averagePerFrameDiv">
@@ -127,6 +146,30 @@
     const getApp = initializeApp(firebaseConfig);
     const getInfoDatabase = getDatabase(getApp);
 
+    flatpickr("#start-date", {
+        dateFormat: "Y-m-d",
+        allowInput: true,
+        onClose: function (selectedDates) {
+            // Set the minimum date for the end date picker
+            flatpickr("#end-date", {
+                minDate: selectedDates[0] || "today"
+            });
+            loadPage();
+        },
+    });
+
+    flatpickr("#end-date", {
+        dateFormat: "Y-m-d",
+        allowInput: true,
+        onClose: function (selectedDates) {
+            // Set the maximum date for the start date picker
+            flatpickr("#start-date", {
+                maxDate: selectedDates[0] || null
+            });
+            loadPage();
+        }
+    });
+
     let loadPage = function () {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has("playerName")) {
@@ -145,6 +188,12 @@
         let gameStatsData = [];
 
         for (let game of player.games) {
+            let startDate = new Date((document.getElementById("start-date")).value);
+            let endDate = new Date((document.getElementById("end-date")).value);
+            let gameDate = new Date(game[0]);
+            if (gameDate > endDate || gameDate < startDate) {
+                continue;
+            }
             // Skip empty games
             let gameStats = player.getGameStats(game[0]);
             if (!gameStats) {
@@ -152,7 +201,7 @@
             }
             gameStatsData.push(gameStats);
         }
-        populateSummarizedStats(gameStatsData);
+        populateSummarizedStats(gameStatsData, player);
         populateAveragePerFrame(gameStatsData);
         populateHolePercentage(gameStatsData);
         populateTotalFrames(gameStatsData);
@@ -186,13 +235,18 @@
         });
     }
 
-    let populateSummarizedStats = function (gameStatsData) {
+    let populateSummarizedStats = function (gameStatsData, player) {
         let summarizedDiv = document.getElementById("summarizedStats");
+        summarizedDiv.style.width = width + "px";
         let totalCornholes = 0;
+        let totalGames = gameStatsData.length;
         for (let gameStats of gameStatsData) {
             totalCornholes += gameStats.cornholes;
         }
-        summarizedDiv.innerHTML = totalCornholes + " Cornholes";
+        let aggregateData = getPlayerAggregateData(player);
+        let tableContainer = getPlayerStatsTable(aggregateData);
+        summarizedDiv.innerHTML = totalGames + " Games, " + totalCornholes + " Cornholes";
+        summarizedDiv.append(tableContainer);
     }
 
     // Set dimensions for each SVG
@@ -244,6 +298,7 @@
 
         // Append the SVG element.
         const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -286,6 +341,7 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -329,6 +385,7 @@
 
         // Append the SVG element.
         const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -370,6 +427,7 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -413,6 +471,7 @@
 
         // Append the SVG element.
         const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -460,6 +519,7 @@
 
         // Append the SVG element.
         const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -543,7 +603,15 @@
             .attr("text-anchor", "middle")
             .text("Game Date"); // Label for x-axis
     }
-    document.querySelector('body').onload = loadPage();
+    document.querySelector('body').onload = function() {
+        loadPage();
+        initializeDateRanges();
+    }
+
+    document.querySelector("#date-range-select").onchange = function() {
+        preloadDateRange(this.value);
+        loadPage();
+    }
 </script>
 
 </html>

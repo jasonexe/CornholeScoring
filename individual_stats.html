@@ -125,7 +125,7 @@
         }
         set(ref(setDatabase, PLAYER_RECORD_PATH + storedPlayerId), games);
         navigator.clipboard
-            .writeText("scorehole.com/individual_stats.html?storedPlayerRecord=" + storedPlayerId)
+            .writeText("scorehole.com/individual_stats.html?storedPlayerRecord=" + storedPlayerId.replaceAll(" ", "%20"))
             .then(() => {
                 alert("URL copied to clipboard");
             }).catch(() => {
@@ -603,12 +603,12 @@
             .attr("text-anchor", "middle")
             .text("Game Date"); // Label for x-axis
     }
-    document.querySelector('body').onload = function() {
+    document.querySelector('body').onload = function () {
         loadPage();
         initializeDateRanges();
     }
 
-    document.querySelector("#date-range-select").onchange = function() {
+    document.querySelector("#date-range-select").onchange = function () {
         preloadDateRange(this.value);
         loadPage();
     }

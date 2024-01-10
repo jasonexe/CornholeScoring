@@ -263,6 +263,8 @@
         const Y_AXIS_LABEL = "Average Per Frame";
         const GET_STAT_FUNCTION = function (data) { return data.averagePerFrame };
         const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.averagePerFrame + " points" };
+        const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         const tooltip = createTooltip("#" + DIV_ID);
         // Create the SVG container.
         const svg = d3.create("svg")
@@ -297,14 +299,13 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
-        const mainData = document.getElementById(DIV_ID);
-        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
     let populateHolePercentage = function (gameStatsData) {
         let mainData = document.getElementById("holePercentDiv");
         const Y_AXIS_LABEL = "Hole Percentage";
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
 
         const tooltip = createTooltip("#holePercentDiv");
         // Create the SVG container.
@@ -341,7 +342,6 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
-        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -351,6 +351,8 @@
         const GET_STAT_FUNCTION = function (data) { return data.boardPercentage };
         const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.boardPercentage + "%" };
         const tooltip = createTooltip("#" + DIV_ID);
+        const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         // Create the SVG container.
         const svg = d3.create("svg")
             .attr("width", width)
@@ -384,14 +386,13 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
-        const mainData = document.getElementById(DIV_ID);
-        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
     let populateTotalFrames = function (gameStatsData) {
         let mainData = document.getElementById("totalFramesDiv");
         const Y_AXIS_LABEL = "Total Frames";
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
 
         const tooltip = createTooltip("#totalFramesDiv");
         // Create the SVG container.
@@ -427,7 +428,6 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
-        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -436,6 +436,8 @@
         const Y_AXIS_LABEL = "Difference Between Opponent";
         const GET_STAT_FUNCTION = function (data) { return data.comparedToOpponent };
         const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.comparedToOpponent + " points vs <span class='capitalize'>" + data.opponentName + "</span>" };
+        const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         const tooltip = createTooltip("#" + DIV_ID);
         // Create the SVG container.
         const svg = d3.create("svg")
@@ -470,8 +472,6 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
-        const mainData = document.getElementById(DIV_ID);
-        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 
@@ -480,6 +480,8 @@
         const Y_AXIS_LABEL = "Cornholes";
         const GET_STAT_FUNCTION = function (data) { return data.cornholes };
         const GET_TOOLTIP_LABEL_FUNCTION = function (data) { return data.cornholes };
+        const mainData = document.getElementById(DIV_ID);
+        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         const tooltip = createTooltip("#" + DIV_ID);
         // Create the SVG container.
         const svg = d3.create("svg")
@@ -518,8 +520,6 @@
             .text(Y_AXIS_LABEL); // Label for y-axis (adjust as needed)
 
         // Append the SVG element.
-        const mainData = document.getElementById(DIV_ID);
-        mainData.innerHTML = "<hr><h2>" + Y_AXIS_LABEL + "</h2>";
         mainData.append(svg.node());
     }
 

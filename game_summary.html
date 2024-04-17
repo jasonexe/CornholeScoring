@@ -188,7 +188,7 @@
                 promises.push(get(child(ref(database), 'games/' + fullGameId)));
                 let gameStartTime = parseInt(fullGameId.substring(0, fullGameId.indexOf(SHARING_ID_SEPARATOR)));
                 for (let playerName of fullGameId.split(SHARING_ID_SEPARATOR).slice(1)) {
-                    playerName = playerName.replace("¯", " ");
+                    playerName = playerName.replaceAll("¯", " ");
                     promises.push(get(child(ref(database), "playerFrames/" + playerName + SHARING_ID_SEPARATOR + gameStartTime)));
                 }
                 Promise.all(promises).then((snapshots) => {

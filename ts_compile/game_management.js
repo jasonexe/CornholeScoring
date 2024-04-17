@@ -110,12 +110,10 @@ class CornholeGame {
     }
     addThrow(bagStatus, teamSide) {
         this.currentFrame.addBagResult(teamSide, bagStatus);
-        storeCurrentGame(this);
         updateScoreDisplay(this);
     }
     subtractThrow(bagStatus, teamSide) {
         this.currentFrame.removeBagResult(teamSide, bagStatus);
-        storeCurrentGame(this);
         updateScoreDisplay(this);
     }
 }
@@ -196,13 +194,19 @@ let storeCurrentGame = function (currentGame) {
     localStorage.setObject(CURRENT_GAME, currentGame);
 };
 let clearCurrentGame = function () {
+    cachedCurrentGame = null;
     localStorage.removeItem(CURRENT_GAME);
 };
+// Cache the current game so we don't need to keep referencing storage
+let cachedCurrentGame = null;
 let getCurrentGame = function () {
     if (!localStorage.getObject(CURRENT_GAME)) {
         return null;
     }
-    return CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME), true);
+    if (cachedCurrentGame == null) {
+        cachedCurrentGame = CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME), true);
+    }
+    return cachedCurrentGame;
 };
 let getPastGames = function () {
     let pastGames = localStorage.getObject(HISTORICAL_GAMES);

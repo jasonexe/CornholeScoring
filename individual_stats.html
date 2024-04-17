@@ -201,13 +201,16 @@
             }
             gameStatsData.push(gameStats);
         }
-        populateSummarizedStats(gameStatsData, player);
-        populateAveragePerFrame(gameStatsData);
-        populateHolePercentage(gameStatsData);
-        populateTotalFrames(gameStatsData);
-        populateBoardPercentage(gameStatsData);
-        populateComparedToOpponent(gameStatsData);
-        populateCornholes(gameStatsData);
+        let sortedGameStats = gameStatsData.sort(function(a, b) {
+            return d3.ascending(a.gameTime, b.gameTime);
+        })
+        populateSummarizedStats(sortedGameStats, player);
+        populateAveragePerFrame(sortedGameStats);
+        populateHolePercentage(sortedGameStats);
+        populateTotalFrames(sortedGameStats);
+        populateBoardPercentage(sortedGameStats);
+        populateComparedToOpponent(sortedGameStats);
+        populateCornholes(sortedGameStats);
     }
 
     let loadEntirePlayerRecord = function (playerRecordId) {

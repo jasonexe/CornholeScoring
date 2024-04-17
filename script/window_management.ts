@@ -1,11 +1,11 @@
 // Sets up any storage if it hasn't been initialized yet
 let setupGamePage = function () {
-    initializePlayers();
-    updatePlayerSelectionList(/* initialize= */ true);
     if (getCurrentGame()) {
         // If there was already a game loaded, go straight to the game page.
         displayGameProgress(getCurrentGame().pastFrames.length);
     }
+    initializePlayers();
+    updatePlayerSelectionList(/* initialize= */ true);
 }
 
 const swapTeamOnePlayers = function () {

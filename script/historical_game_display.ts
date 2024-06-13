@@ -37,24 +37,13 @@ let displayPastGamesSummary = function () {
     }
 }
 
-let generateSharingUrl = function () {
-    let crushedGameData = encodeURIComponent(crush(JSON.stringify(pastGame, replacer)));
-    let playerGameData = new Map<string, IndividualFrame[]>();
-    for (let playerName of playerNames) {
-        playerGameData.set(playerName, getPlayer(playerName).games.get(pastGame.id));
-    }
-    let crushedPlayerFrames = encodeURIComponent(crush(JSON.stringify(playerGameData, replacer)));
-    navigator.clipboard.writeText("scorehole.com/game_summary.html?gameData=" + crushedGameData + "&playerData=" + crushedPlayerFrames);
-    alert("URL copied to clipboard");
-}
-
 // Stored as a global variable so we don't need to keep getting it
 let pastGame: CornholeGame;
 let playerNames: Array<string> = new Array<string>();
 // If we're using URL data, this is populated instead of pulling the player from storage.
 let playerGameData: Map<string, IndividualFrame[]>;
-let displayGameInUrl = function () {
-    pastGame = getGameFromUrl();
+let displayGameInUrl = async function () {
+    pastGame = await getGameFromUrl();
     updatePastFrames(pastGame);
 
     document.getElementById("game_time").innerText = new Date(pastGame.id).toLocaleString();
@@ -109,16 +98,16 @@ let displayGameInUrl = function () {
     buttonSection.append(fourthPlayerButton);
 }
 
-let getGameFromUrl = function (): CornholeGame {
+let getGameFromUrl = async function (): Promise<CornholeGame> {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("gameId")) {
-        return getPastGame(parseInt(urlParams.get("gameId")));
+        return await getGamePromise(parseInt(urlParams.get("gameId")));
     } else if (urlParams.has("gameData")) {
         playerGameData = JSON.parse(uncrush(urlParams.get("playerData")), reviver);
         return CornholeGame.fromJson(JSON.parse(uncrush(urlParams.get("gameData")), reviver), false);
     } else if (urlParams.has("storedGameId")) {
         // set playerGameData
-        return getPastGame(parseInt(urlParams.get("storedGameId").split(SHARING_ID_SEPARATOR)[0]));
+        return await getGamePromise(parseInt(urlParams.get("storedGameId").split(SHARING_ID_SEPARATOR)[0]));
     }
 }
 
@@ -135,7 +124,7 @@ let displayFrames = function () {
     document.getElementById("frame_button").style.backgroundColor = "lightgreen";
 }
 
-let displayPlayerPerformance = function (playerName: string) {
+let displayPlayerPerformance = async function (playerName: string) {
     document.getElementById("frame_button").style.backgroundColor = "buttonface";
     for (let playerButtonId of playerNames) {
         if (playerButtonId === playerName) {
@@ -154,7 +143,7 @@ let displayPlayerPerformance = function (playerName: string) {
     if (playerGameData) {
         playerFrames = playerGameData.get(playerName);
     } else {
-        let playerData = getPlayer(playerName);
+        let playerData = await getPlayerPromise(playerName);
         playerFrames = playerData.games.get(pastGame.id);
     }
 

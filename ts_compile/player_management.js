@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const PLAYER_KEY = "__AllPlayers__";
 class CornholePlayer {
     constructor(name, archived) {
@@ -16,29 +25,32 @@ class CornholePlayer {
         this.updateStorage();
     }
     registerGame(gameId) {
-        // If there's already data in storage that doesn't match what's in the game player, merge them
-        // TODO(jason) do a loop comparing game IDs.
-        let localPlayer = getPlayer(this.name);
-        if (localPlayer) {
-            for (let game of localPlayer.games) {
-                // Go through all the games already stored locally, and make sure they're synced up.
-                if (!this.games.has(game[0])) {
-                    // Add it if it's not there
-                    this.addFullGameWithoutStorageUpdate(game[0], game[1]);
+        return __awaiter(this, void 0, void 0, function* () {
+            // If there's already data in storage that doesn't match what's in the game player, merge them
+            let localPlayer = yield getPlayerPromise(this.name);
+            if (localPlayer) {
+                for (let game of localPlayer.games) {
+                    // Go through all the games already stored locally, and make sure they're synced up.
+                    if (!this.games.has(game[0])) {
+                        // Add it if it's not there
+                        this.addFullGameWithoutStorageUpdate(game[0], game[1]);
+                    }
                 }
             }
-        }
-        if (!this.games.get(gameId)) {
-            this.games.set(gameId, new Array());
-        }
-        this.updateStorage();
+            if (!this.games.get(gameId)) {
+                this.games.set(gameId, new Array());
+            }
+            this.updateStorage();
+        });
     }
     getGameStats(gameId) {
-        let pastGame = getPastGame(gameId);
-        if (!pastGame) {
-            return null;
-        }
-        return new GameStatsForPlayer(pastGame, this.name);
+        return __awaiter(this, void 0, void 0, function* () {
+            let pastGame = yield getGamePromise(gameId);
+            if (!pastGame) {
+                return null;
+            }
+            return new GameStatsForPlayer(pastGame, this.name);
+        });
     }
     addFrameToGame(gameId, frame) {
         let gameFrameArray = this.games.get(gameId);
@@ -104,38 +116,52 @@ class CornholePlayer {
     updateStorage() {
         updatePlayerData(this);
     }
-    // Constructs the whole class given a base from JSON parsing
-    static fromJson(basePlayer) {
+    // Only should be called for the players in the current game (we won't populate any data from storage in this one)
+    static fromJsonSynchronous(basePlayer) {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
         playerWithFunc.favorite = basePlayer.favorite === undefined ? false : basePlayer.favorite;
-        if (basePlayer.games) {
-            playerWithFunc.games = basePlayer.games;
-        }
-        else if (getPlayer(basePlayer.name)) {
-            playerWithFunc.games = getPlayer(basePlayer.name).games;
-        }
+        playerWithFunc.games = basePlayer.games;
         return playerWithFunc;
     }
-}
-let updatePlayerData = function (player) {
-    let allPlayers = localStorage.getObject(PLAYER_KEY);
-    if (!allPlayers) {
-        // If allPlayers is null, just skip
-        return;
+    // Constructs the whole class given a base from JSON parsing
+    static fromJson(basePlayer) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
+            playerWithFunc.favorite = basePlayer.favorite === undefined ? false : basePlayer.favorite;
+            if (basePlayer.games) {
+                // If the base player already has games, then we don't need to pull from the DB
+                playerWithFunc.games = basePlayer.games;
+            }
+            else {
+                let storedPlayer = yield getPlayerPromise(basePlayer.name);
+                if (storedPlayer) {
+                    playerWithFunc.games = storedPlayer.games;
+                }
+            }
+            return playerWithFunc;
+        });
     }
-    allPlayers.set(player.name, player);
-    localStorage.setObject(PLAYER_KEY, allPlayers);
-};
+}
+function updatePlayerData(player, transaction) {
+    transaction = transaction ? transaction : db.transaction(PLAYER_KEY, "readwrite");
+    let players = transaction.objectStore(PLAYER_KEY);
+    transaction.onerror = function () {
+        alert("Writing failed");
+    };
+    players.put(player);
+}
 // Adds the given completed game to the existing map of completed games.
 let addGameToPlayer = function (gameId, playerName, allFrames) {
-    let existingStoredPlayer = getPlayer(playerName);
-    if (existingStoredPlayer != null) {
-        existingStoredPlayer.addFullGame(gameId, allFrames);
-    }
-    else {
-        let newPlayer = new CornholePlayer(playerName, false);
-        newPlayer.addFullGame(gameId, allFrames);
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        let existingStoredPlayer = yield getPlayerPromise(playerName);
+        if (existingStoredPlayer != null) {
+            existingStoredPlayer.addFullGame(gameId, allFrames);
+        }
+        else {
+            let newPlayer = new CornholePlayer(playerName, false);
+            newPlayer.addFullGame(gameId, allFrames);
+        }
+    });
 };
 let urlPlayerName = function () {
     const urlParams = new URLSearchParams(window.location.search);
@@ -143,17 +169,6 @@ let urlPlayerName = function () {
         return urlParams.get("playerName");
     }
     return "Error Retrieving Player";
-};
-let getPlayer = function (playerName) {
-    let allPlayers = localStorage.getObject(PLAYER_KEY);
-    if (allPlayers == null) {
-        initializePlayers();
-        return null;
-    }
-    if (!allPlayers.has(playerName)) {
-        return null;
-    }
-    return CornholePlayer.fromJson(allPlayers.get(playerName));
 };
 let getPlayers = function () {
     let allPlayers = localStorage.getObject(PLAYER_KEY);

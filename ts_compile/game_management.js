@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const CURRENT_GAME = "__CURRENT_GAME__";
 const HISTORICAL_GAMES = "__HISTORICAL_GAMES__";
 class CornholeGame {
@@ -46,17 +55,16 @@ class CornholeGame {
         }
         this.rightTeam = updatedRightArray;
     }
-    // Constructs the whole class given a base from JSON parsing
-    static fromJson(baseGame, pulledFromLocalStorage) {
+    static fromJsonSynchronous(baseGame) {
         let leftPlayers = new Array();
         for (let leftPlayer of baseGame.leftTeam) {
-            leftPlayers.push(CornholePlayer.fromJson(leftPlayer));
+            leftPlayers.push(CornholePlayer.fromJsonSynchronous(leftPlayer));
         }
         let rightPlayers = new Array();
         for (let rightPlayer of baseGame.rightTeam) {
-            rightPlayers.push(CornholePlayer.fromJson(rightPlayer));
+            rightPlayers.push(CornholePlayer.fromJsonSynchronous(rightPlayer));
         }
-        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, !pulledFromLocalStorage);
+        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, /* registerGame= */ true);
         gameWithFunctions.id = baseGame.id;
         let pastFrames = new Array();
         for (let pastFrame of baseGame.pastFrames) {
@@ -66,6 +74,29 @@ class CornholeGame {
         gameWithFunctions.currentFrame = CornholeFrame.fromJson(baseGame.currentFrame);
         gameWithFunctions.currentScore = Score.fromJson(baseGame.currentScore);
         return gameWithFunctions;
+    }
+    // Constructs the whole class given a base from JSON parsing
+    static fromJson(baseGame, pulledFromLocalStorage) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let leftPlayers = new Array();
+            for (let leftPlayer of baseGame.leftTeam) {
+                leftPlayers.push(yield CornholePlayer.fromJson(leftPlayer));
+            }
+            let rightPlayers = new Array();
+            for (let rightPlayer of baseGame.rightTeam) {
+                rightPlayers.push(yield CornholePlayer.fromJson(rightPlayer));
+            }
+            let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, !pulledFromLocalStorage);
+            gameWithFunctions.id = baseGame.id;
+            let pastFrames = new Array();
+            for (let pastFrame of baseGame.pastFrames) {
+                pastFrames.push(CornholeFrame.fromJson(pastFrame));
+            }
+            gameWithFunctions.pastFrames = pastFrames;
+            gameWithFunctions.currentFrame = CornholeFrame.fromJson(baseGame.currentFrame);
+            gameWithFunctions.currentScore = Score.fromJson(baseGame.currentScore);
+            return gameWithFunctions;
+        });
     }
     // Call at the end of the frame - updates the score, pushes the frame to players, updates game in storage.
     submitFrame() {
@@ -157,30 +188,32 @@ let selectTeams = function () {
 };
 // Updates UI to the "game" screen and initializes the CornholeGame, storing it in LocalStorage
 let startGame = function () {
-    // Read the DOM and do stuff to create a CornholeGame instance.
-    let teamOnePlayerOneName = document.getElementById("team_one_player_one")
-        .selectedOptions[0]
-        .value;
-    let teamOnePlayerTwoName = document.getElementById("team_one_player_two")
-        .selectedOptions[0]
-        .value;
-    let teamTwoPlayerOneName = document.getElementById("team_two_player_one")
-        .selectedOptions[0]
-        .value;
-    let teamTwoPlayerTwoName = document.getElementById("team_two_player_two")
-        .selectedOptions[0]
-        .value;
-    // Got the names, put them in the selectors.
-    let newGame = new CornholeGame(0, 4, [
-        getPlayer(teamOnePlayerOneName),
-        getPlayer(teamOnePlayerTwoName),
-    ], [
-        getPlayer(teamTwoPlayerOneName),
-        getPlayer(teamTwoPlayerTwoName),
-    ], 
-    /* registerGame= */ true);
-    storeCurrentGame(newGame);
-    displayGameProgress(0);
+    return __awaiter(this, void 0, void 0, function* () {
+        // Read the DOM and do stuff to create a CornholeGame instance.
+        let teamOnePlayerOneName = document.getElementById("team_one_player_one")
+            .selectedOptions[0]
+            .value;
+        let teamOnePlayerTwoName = document.getElementById("team_one_player_two")
+            .selectedOptions[0]
+            .value;
+        let teamTwoPlayerOneName = document.getElementById("team_two_player_one")
+            .selectedOptions[0]
+            .value;
+        let teamTwoPlayerTwoName = document.getElementById("team_two_player_two")
+            .selectedOptions[0]
+            .value;
+        // Got the names, put them in the selectors.
+        let newGame = new CornholeGame(0, 4, [
+            yield getPlayerPromise(teamOnePlayerOneName),
+            yield getPlayerPromise(teamOnePlayerTwoName),
+        ], [
+            yield getPlayerPromise(teamTwoPlayerOneName),
+            yield getPlayerPromise(teamTwoPlayerTwoName),
+        ], 
+        /* registerGame= */ true);
+        storeCurrentGame(newGame);
+        displayGameProgress(0);
+    });
 };
 let endGame = function () {
     // Store the game in the history, only if there's actual frames from it. Also clear the current game from storage.
@@ -204,7 +237,7 @@ let getCurrentGame = function () {
         return null;
     }
     if (cachedCurrentGame == null) {
-        cachedCurrentGame = CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME), true);
+        cachedCurrentGame = CornholeGame.fromJsonSynchronous(localStorage.getObject(CURRENT_GAME));
     }
     return cachedCurrentGame;
 };
@@ -215,29 +248,12 @@ let getPastGames = function () {
     }
     return null;
 };
-let historicalGameCache = null;
-let getPastGame = function (gameId) {
-    if (historicalGameCache === null) {
-        historicalGameCache = localStorage.getObject(HISTORICAL_GAMES);
-    }
-    if (historicalGameCache !== null && historicalGameCache.has(gameId)) {
-        return CornholeGame.fromJson(historicalGameCache.get(gameId), true);
-    }
-    return null;
-};
 let storePastGame = function (finishedGame) {
-    let pastGames = getPastGames();
-    if (!pastGames) {
-        // If there's no games already stored, then create a new array.
-        localStorage.setObject(HISTORICAL_GAMES, new Map().set(finishedGame.id, finishedGame));
-        return;
-    }
-    if (pastGames.get(finishedGame.id)) {
-        // No need to do anything if there's already a game ID stored.
-        return;
-    }
-    pastGames.set(finishedGame.id, finishedGame);
-    localStorage.setObject(HISTORICAL_GAMES, pastGames);
-    historicalGameCache = pastGames;
+    let transaction = db.transaction(HISTORICAL_GAMES, "readwrite");
+    let games = transaction.objectStore(HISTORICAL_GAMES);
+    transaction.onerror = function () {
+        alert("Writing failed");
+    };
+    games.put(finishedGame);
 };
 //# sourceMappingURL=game_management.js.map

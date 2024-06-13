@@ -54,15 +54,36 @@ class CornholeGame {
         this.rightTeam = updatedRightArray;
     }
 
-    // Constructs the whole class given a base from JSON parsing
-    static fromJson(baseGame: CornholeGame, pulledFromLocalStorage: boolean): CornholeGame {
+    static fromJsonSynchronous(baseGame: CornholeGame): CornholeGame {
         let leftPlayers = new Array<CornholePlayer>();
         for (let leftPlayer of baseGame.leftTeam) {
-            leftPlayers.push(CornholePlayer.fromJson(leftPlayer));
+            leftPlayers.push(CornholePlayer.fromJsonSynchronous(leftPlayer));
         }
         let rightPlayers = new Array<CornholePlayer>();
         for (let rightPlayer of baseGame.rightTeam) {
-            rightPlayers.push(CornholePlayer.fromJson(rightPlayer));
+            rightPlayers.push(CornholePlayer.fromJsonSynchronous(rightPlayer));
+        }
+        let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, /* registerGame= */ true);
+        gameWithFunctions.id = baseGame.id;
+        let pastFrames = new Array<CornholeFrame>();
+        for (let pastFrame of baseGame.pastFrames) {
+            pastFrames.push(CornholeFrame.fromJson(pastFrame));
+        }
+        gameWithFunctions.pastFrames = pastFrames;
+        gameWithFunctions.currentFrame = CornholeFrame.fromJson(baseGame.currentFrame);
+        gameWithFunctions.currentScore = Score.fromJson(baseGame.currentScore);
+        return gameWithFunctions
+    }
+
+    // Constructs the whole class given a base from JSON parsing
+    static async fromJson(baseGame: CornholeGame, pulledFromLocalStorage: boolean): Promise<CornholeGame> {
+        let leftPlayers = new Array<CornholePlayer>();
+        for (let leftPlayer of baseGame.leftTeam) {
+            leftPlayers.push(await CornholePlayer.fromJson(leftPlayer));
+        }
+        let rightPlayers = new Array<CornholePlayer>();
+        for (let rightPlayer of baseGame.rightTeam) {
+            rightPlayers.push(await CornholePlayer.fromJson(rightPlayer));
         }
         let gameWithFunctions = new CornholeGame(baseGame.id, baseGame.numberOfBags, leftPlayers, rightPlayers, !pulledFromLocalStorage);
         gameWithFunctions.id = baseGame.id;
@@ -136,7 +157,7 @@ class CornholeGame {
 
 // Hole + board management
 let addThrow = function (bagStatus: BagStatus, teamSide: TeamSide) {
-    let currentGame = getCurrentGame();
+    let currentGame : CornholeGame = getCurrentGame();
     currentGame.addThrow(bagStatus, teamSide);
 }
 
@@ -181,7 +202,7 @@ let selectTeams = function () {
 }
 
 // Updates UI to the "game" screen and initializes the CornholeGame, storing it in LocalStorage
-let startGame = function () {
+let startGame = async function () {
     // Read the DOM and do stuff to create a CornholeGame instance.
     let teamOnePlayerOneName =
         (<HTMLSelectElement>document.getElementById("team_one_player_one"))
@@ -207,12 +228,12 @@ let startGame = function () {
         0,
         4,
         [
-            getPlayer(teamOnePlayerOneName),
-            getPlayer(teamOnePlayerTwoName),
+            await getPlayerPromise(teamOnePlayerOneName),
+            await getPlayerPromise(teamOnePlayerTwoName),
         ],
         [
-            getPlayer(teamTwoPlayerOneName),
-            getPlayer(teamTwoPlayerTwoName),
+            await getPlayerPromise(teamTwoPlayerOneName),
+            await getPlayerPromise(teamTwoPlayerTwoName),
         ],
         /* registerGame= */ true)
     storeCurrentGame(newGame);
@@ -240,13 +261,13 @@ let clearCurrentGame = function () {
 }
 
 // Cache the current game so we don't need to keep referencing storage
-let cachedCurrentGame = null;
+let cachedCurrentGame : CornholeGame = null;
 let getCurrentGame = function (): CornholeGame {
     if (!localStorage.getObject(CURRENT_GAME)) {
         return null;
     }
     if (cachedCurrentGame == null) {
-        cachedCurrentGame = CornholeGame.fromJson(localStorage.getObject(CURRENT_GAME), true)
+        cachedCurrentGame = CornholeGame.fromJsonSynchronous(localStorage.getObject(CURRENT_GAME))
     }
     return cachedCurrentGame;
 }
@@ -259,30 +280,12 @@ let getPastGames = function (): Map<number, CornholeGame> {
     return null;
 }
 
-let historicalGameCache = null;
-
-let getPastGame = function (gameId: number): CornholeGame {
-    if (historicalGameCache === null) {
-        historicalGameCache = <Map<number, CornholeGame>>localStorage.getObject(HISTORICAL_GAMES)
-    }
-    if (historicalGameCache !== null && historicalGameCache.has(gameId)) {
-        return CornholeGame.fromJson(historicalGameCache.get(gameId), true);
-    }
-    return null;
-}
-
 let storePastGame = function (finishedGame: CornholeGame) {
-    let pastGames = getPastGames();
-    if (!pastGames) {
-        // If there's no games already stored, then create a new array.
-        localStorage.setObject(HISTORICAL_GAMES, new Map<number, CornholeGame>().set(finishedGame.id, finishedGame));
-        return;
+    let transaction = db.transaction(HISTORICAL_GAMES, "readwrite");
+    let games = transaction.objectStore(HISTORICAL_GAMES);
+    transaction.onerror = function() {
+        alert("Writing failed");
     }
-    if (pastGames.get(finishedGame.id)) {
-        // No need to do anything if there's already a game ID stored.
-        return;
-    }
-    pastGames.set(finishedGame.id, finishedGame);
-    localStorage.setObject(HISTORICAL_GAMES, pastGames);
-    historicalGameCache = pastGames;
+    
+    games.put(finishedGame);
 }

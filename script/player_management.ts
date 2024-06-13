@@ -23,10 +23,9 @@ class CornholePlayer {
         this.updateStorage();
     }
 
-    registerGame(gameId: number) {
+    async registerGame(gameId: number) {
         // If there's already data in storage that doesn't match what's in the game player, merge them
-        // TODO(jason) do a loop comparing game IDs.
-        let localPlayer = getPlayer(this.name);
+        let localPlayer = await getPlayerPromise(this.name);
         if (localPlayer) {
             for (let game of localPlayer.games) {
                 // Go through all the games already stored locally, and make sure they're synced up.
@@ -42,8 +41,8 @@ class CornholePlayer {
         this.updateStorage();
     }
 
-    getGameStats(gameId: number): GameStatsForPlayer {
-        let pastGame = getPastGame(gameId);
+    async getGameStats(gameId: number): Promise<GameStatsForPlayer> {
+        let pastGame = await getGamePromise(gameId);
         if (!pastGame) {
             return null;
         }
@@ -121,32 +120,43 @@ class CornholePlayer {
         updatePlayerData(this);
     }
 
+    // Only should be called for the players in the current game (we won't populate any data from storage in this one)
+    static fromJsonSynchronous(basePlayer: CornholePlayer) {
+        let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
+        playerWithFunc.favorite = basePlayer.favorite === undefined ? false : basePlayer.favorite;
+        playerWithFunc.games = basePlayer.games;
+        return playerWithFunc;
+    }
+
     // Constructs the whole class given a base from JSON parsing
-    static fromJson(basePlayer: CornholePlayer): CornholePlayer {
+    static async fromJson(basePlayer: CornholePlayer): Promise<CornholePlayer> {
         let playerWithFunc = new CornholePlayer(basePlayer.name, basePlayer.archived == null ? false : basePlayer.archived);
         playerWithFunc.favorite = basePlayer.favorite === undefined ? false : basePlayer.favorite;
         if(basePlayer.games) {
+            // If the base player already has games, then we don't need to pull from the DB
             playerWithFunc.games = basePlayer.games;
-        } else if (getPlayer(basePlayer.name)) {
-            playerWithFunc.games = getPlayer(basePlayer.name).games;
+        } else {
+            let storedPlayer = await getPlayerPromise(basePlayer.name)
+            if (storedPlayer) {
+                playerWithFunc.games = storedPlayer.games;
+            }
         }
         return playerWithFunc;
     }
 }
 
-let updatePlayerData = function (player: CornholePlayer) {
-    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    if (!allPlayers) {
-        // If allPlayers is null, just skip
-        return;
+function updatePlayerData (player: CornholePlayer, transaction? : IDBTransaction) {
+    transaction = transaction ? transaction : db.transaction(PLAYER_KEY, "readwrite");
+    let players = transaction.objectStore(PLAYER_KEY);
+    transaction.onerror = function() {
+        alert("Writing failed");
     }
-    allPlayers.set(player.name, player);
-    localStorage.setObject(PLAYER_KEY, allPlayers);
+    players.put(player);
 }
 
 // Adds the given completed game to the existing map of completed games.
-let addGameToPlayer = function(gameId: number, playerName: string, allFrames: Array<IndividualFrame>) {
-    let existingStoredPlayer = getPlayer(playerName);
+let addGameToPlayer = async function(gameId: number, playerName: string, allFrames: Array<IndividualFrame>) {
+    let existingStoredPlayer = await getPlayerPromise(playerName);
     if (existingStoredPlayer != null) {
         existingStoredPlayer.addFullGame(gameId, allFrames);
     } else {
@@ -161,18 +171,6 @@ let urlPlayerName = function () {
         return urlParams.get("playerName");
     }
     return "Error Retrieving Player";
-}
-
-let getPlayer = function (playerName: string): CornholePlayer {
-    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    if (allPlayers == null) {
-        initializePlayers();
-        return null;
-    }
-    if (!allPlayers.has(playerName)) {
-        return null;
-    }
-    return CornholePlayer.fromJson(allPlayers.get(playerName));
 }
 
 let getPlayers = function (): Map<string, CornholePlayer> {

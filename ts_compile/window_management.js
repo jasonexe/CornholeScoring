@@ -1,10 +1,18 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 // Sets up any storage if it hasn't been initialized yet
 let setupGamePage = function () {
     if (getCurrentGame()) {
         // If there was already a game loaded, go straight to the game page.
         displayGameProgress(getCurrentGame().pastFrames.length);
     }
-    initializePlayers();
     updatePlayerSelectionList(/* initialize= */ true);
 };
 const swapTeamOnePlayers = function () {
@@ -23,95 +31,97 @@ const swapTeamTwoPlayers = function () {
 // Set initialize to true if you want to pre-set the selectors to whatever the previous game was. If initialize is false, then the
 // selector options will update without changing the current selection.
 const updatePlayerSelectionList = function (initialize) {
-    let allPlayers = localStorage.getObject(PLAYER_KEY);
-    let mostRecentGame;
-    if (getPastGames() && initialize) {
-        mostRecentGame = [...getPastGames().entries()].reduce((firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
-    }
-    else if (!initialize) {
-        // Only do this if the page is not being initialized - if this is called when initialize is true (IE: getPastGames() is null) then
-        // we get an error because there's no selected option
-        // "mostRecentGame" is a fake game, with players whose names are currently in the selectors
-        let teamOnePlayerOne = document.getElementById("team_one_player_one").selectedOptions[0].value;
-        let teamOnePlayerTwo = document.getElementById("team_one_player_two").selectedOptions[0].value;
-        let teamTwoPlayerOne = document.getElementById("team_two_player_one").selectedOptions[0].value;
-        let teamTwoPlayerTwo = document.getElementById("team_two_player_two").selectedOptions[0].value;
-        let fakeGame = new CornholeGame(0, 4, [new CornholePlayer(teamOnePlayerOne, false),
-            new CornholePlayer(teamOnePlayerTwo, false)
-        ], [new CornholePlayer(teamTwoPlayerOne, false),
-            new CornholePlayer(teamTwoPlayerTwo, false)
-        ], 
-        /* registerGame= */ false);
-        mostRecentGame = [0, fakeGame];
-    }
-    var sortedPlayers = new Map([...allPlayers.entries()].sort((player1, player2) => {
-        // If one is favorite and the other is not, then favorite is higher
-        if (player1[1].favorite && !player2[1].favorite) {
-            return -1;
+    return __awaiter(this, void 0, void 0, function* () {
+        let allPlayers = localStorage.getObject(PLAYER_KEY);
+        let mostRecentGame;
+        if ((yield getPastGames()) && initialize) {
+            mostRecentGame = [...(yield getPastGames()).entries()].reduce((firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
         }
-        else if (!player1[1].favorite && player2[1].favorite) {
-            return 1;
+        else if (!initialize) {
+            // Only do this if the page is not being initialized - if this is called when initialize is true (IE: getPastGames() is null) then
+            // we get an error because there's no selected option
+            // "mostRecentGame" is a fake game, with players whose names are currently in the selectors
+            let teamOnePlayerOne = document.getElementById("team_one_player_one").selectedOptions[0].value;
+            let teamOnePlayerTwo = document.getElementById("team_one_player_two").selectedOptions[0].value;
+            let teamTwoPlayerOne = document.getElementById("team_two_player_one").selectedOptions[0].value;
+            let teamTwoPlayerTwo = document.getElementById("team_two_player_two").selectedOptions[0].value;
+            let fakeGame = new CornholeGame(0, 4, [new CornholePlayer(teamOnePlayerOne, false),
+                new CornholePlayer(teamOnePlayerTwo, false)
+            ], [new CornholePlayer(teamTwoPlayerOne, false),
+                new CornholePlayer(teamTwoPlayerTwo, false)
+            ], 
+            /* registerGame= */ false);
+            mostRecentGame = [0, fakeGame];
         }
-        // If either both are or are not favorite, then just straight compare the name
-        return player1[0] > player2[0] ? 1 : -1;
-    }));
-    let playerSelectors = Array.from(document.getElementsByClassName("player_options"));
-    for (let selectorIndexString in playerSelectors) {
-        let selectorIndex = parseInt(selectorIndexString);
-        let castSelector = playerSelectors[selectorIndex];
-        castSelector.innerHTML = "";
-        let playerNum = 0;
+        var sortedPlayers = new Map([...allPlayers.entries()].sort((player1, player2) => {
+            // If one is favorite and the other is not, then favorite is higher
+            if (player1[1].favorite && !player2[1].favorite) {
+                return -1;
+            }
+            else if (!player1[1].favorite && player2[1].favorite) {
+                return 1;
+            }
+            // If either both are or are not favorite, then just straight compare the name
+            return player1[0] > player2[0] ? 1 : -1;
+        }));
+        let playerSelectors = Array.from(document.getElementsByClassName("player_options"));
+        for (let selectorIndexString in playerSelectors) {
+            let selectorIndex = parseInt(selectorIndexString);
+            let castSelector = playerSelectors[selectorIndex];
+            castSelector.innerHTML = "";
+            let playerNum = 0;
+            for (let playerData of sortedPlayers) {
+                if (playerData[1].archived) {
+                    continue;
+                }
+                let option = new Option(playerData[0], playerData[0]);
+                option.textContent = playerData[0];
+                castSelector.add(option);
+                if (mostRecentGame) {
+                    // Assume we have at most 4 selectors
+                    switch (selectorIndex) {
+                        case 0:
+                            if (playerData[0] === mostRecentGame[1].leftTeam[0].name) {
+                                castSelector.selectedIndex = playerNum;
+                            }
+                            break;
+                        case 1:
+                            if (playerData[0] === mostRecentGame[1].leftTeam[1].name) {
+                                castSelector.selectedIndex = playerNum;
+                            }
+                            break;
+                        case 2:
+                            if (playerData[0] === mostRecentGame[1].rightTeam[0].name) {
+                                castSelector.selectedIndex = playerNum;
+                            }
+                            break;
+                        case 3:
+                            if (playerData[0] === mostRecentGame[1].rightTeam[1].name) {
+                                castSelector.selectedIndex = playerNum;
+                            }
+                            break;
+                        default:
+                            // no op, nothing we can do
+                            break;
+                    }
+                }
+                playerNum += 1;
+            }
+            if (!mostRecentGame) {
+                castSelector.selectedIndex = selectorIndex;
+            }
+        }
+        let removalPlayerSelector = document.getElementById("player_to_remove");
+        removalPlayerSelector.innerHTML = "";
         for (let playerData of sortedPlayers) {
             if (playerData[1].archived) {
                 continue;
             }
             let option = new Option(playerData[0], playerData[0]);
             option.textContent = playerData[0];
-            castSelector.add(option);
-            if (mostRecentGame) {
-                // Assume we have at most 4 selectors
-                switch (selectorIndex) {
-                    case 0:
-                        if (playerData[0] === mostRecentGame[1].leftTeam[0].name) {
-                            castSelector.selectedIndex = playerNum;
-                        }
-                        break;
-                    case 1:
-                        if (playerData[0] === mostRecentGame[1].leftTeam[1].name) {
-                            castSelector.selectedIndex = playerNum;
-                        }
-                        break;
-                    case 2:
-                        if (playerData[0] === mostRecentGame[1].rightTeam[0].name) {
-                            castSelector.selectedIndex = playerNum;
-                        }
-                        break;
-                    case 3:
-                        if (playerData[0] === mostRecentGame[1].rightTeam[1].name) {
-                            castSelector.selectedIndex = playerNum;
-                        }
-                        break;
-                    default:
-                        // no op, nothing we can do
-                        break;
-                }
-            }
-            playerNum += 1;
+            removalPlayerSelector.add(option);
         }
-        if (!mostRecentGame) {
-            castSelector.selectedIndex = selectorIndex;
-        }
-    }
-    let removalPlayerSelector = document.getElementById("player_to_remove");
-    removalPlayerSelector.innerHTML = "";
-    for (let playerData of sortedPlayers) {
-        if (playerData[1].archived) {
-            continue;
-        }
-        let option = new Option(playerData[0], playerData[0]);
-        option.textContent = playerData[0];
-        removalPlayerSelector.add(option);
-    }
+    });
 };
 let displayGameProgress = function (frameNumber) {
     let addPlayerScreen = document.getElementById("add_players");

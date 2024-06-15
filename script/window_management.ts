@@ -4,7 +4,6 @@ let setupGamePage = function () {
         // If there was already a game loaded, go straight to the game page.
         displayGameProgress(getCurrentGame().pastFrames.length);
     }
-    initializePlayers();
     updatePlayerSelectionList(/* initialize= */ true);
 }
 
@@ -27,11 +26,11 @@ const swapTeamTwoPlayers = function () {
 // Updates the dropdowns on screen 2, where the user selects which players are in the game.
 // Set initialize to true if you want to pre-set the selectors to whatever the previous game was. If initialize is false, then the
 // selector options will update without changing the current selection.
-const updatePlayerSelectionList = function (initialize: boolean) {
+const updatePlayerSelectionList = async function (initialize: boolean) {
     let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
     let mostRecentGame;
-    if (getPastGames() && initialize) {
-        mostRecentGame = [...getPastGames().entries()].reduce(
+    if (await getPastGames() && initialize) {
+        mostRecentGame = [...(await getPastGames()).entries()].reduce(
             (firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
     } else if (!initialize) {
         // Only do this if the page is not being initialized - if this is called when initialize is true (IE: getPastGames() is null) then

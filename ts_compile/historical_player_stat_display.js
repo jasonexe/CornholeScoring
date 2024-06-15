@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const sortingFunctions = {
     "name": (a, b) => { return a[0].localeCompare(b[0]); },
     "games_played": (a, b) => {
@@ -11,21 +20,21 @@ const sortingFunctions = {
         return bGamesPlayed - aGamesPlayed;
     },
     "average_score": (a, b) => {
-        let player1Aggregate = getPlayerAggregateData(a[1]);
-        let player2Aggregate = getPlayerAggregateData(b[1]);
+        let player1Aggregate = getPlayerAggregateDataWithoutWins(a[1]);
+        let player2Aggregate = getPlayerAggregateDataWithoutWins(b[1]);
         let average1ScorePerFrame = ((player1Aggregate.totalHoles * 3 + player1Aggregate.totalBoards) / (player1Aggregate.totalFrames));
         let average2ScorePerFrame = ((player2Aggregate.totalHoles * 3 + player2Aggregate.totalBoards) / (player2Aggregate.totalFrames));
         // Do 2 minus 1 because we want it to be descending
         return (average2ScorePerFrame || 0) - (average1ScorePerFrame || 0);
     },
     "hole_rate": (a, b) => {
-        let player1Aggregate = getPlayerAggregateData(a[1]);
-        let player2Aggregate = getPlayerAggregateData(b[1]);
+        let player1Aggregate = getPlayerAggregateDataWithoutWins(a[1]);
+        let player2Aggregate = getPlayerAggregateDataWithoutWins(b[1]);
         return (player2Aggregate.totalHoles / player2Aggregate.totalThrown) - (player1Aggregate.totalHoles / player1Aggregate.totalThrown);
     },
     "board_rate": (a, b) => {
-        let player1Aggregate = getPlayerAggregateData(a[1]);
-        let player2Aggregate = getPlayerAggregateData(b[1]);
+        let player1Aggregate = getPlayerAggregateDataWithoutWins(a[1]);
+        let player2Aggregate = getPlayerAggregateDataWithoutWins(b[1]);
         return (player2Aggregate.totalBoards / player2Aggregate.totalThrown) - (player1Aggregate.totalBoards / player1Aggregate.totalThrown);
     },
 };
@@ -81,11 +90,10 @@ let preloadDateRange = function (value) {
     document.getElementById("start-date").value = startDate;
     document.getElementById("end-date").value = endDate;
 };
-let getPlayerAggregateData = function (player) {
+let getPlayerAggregateDataWithoutWins = function (player) {
     let startDate = new Date(document.getElementById("start-date").value);
     let endDate = new Date(document.getElementById("end-date").value);
     let playerData = new PlayerData();
-    playerData.totalWins = getPlayerWins(player, startDate, endDate);
     for (let gameInfo of player.games) {
         // Determine how the player did in the game
         let gameDate = new Date(gameInfo[0]);
@@ -114,81 +122,89 @@ let getPlayerAggregateData = function (player) {
     }
     return playerData;
 };
+let getPlayerAggregateData = function (player) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let startDate = new Date(document.getElementById("start-date").value);
+        let endDate = new Date(document.getElementById("end-date").value);
+        let playerData = getPlayerAggregateDataWithoutWins(player);
+        playerData.totalWins = yield getPlayerWins(player, startDate, endDate);
+        return playerData;
+    });
+};
 // This is set at the start of setupPlayerHistoryPage()
-let pastGamesCache = undefined;
 let getPlayerWins = function (player, startDate, endDate) {
-    if (!pastGamesCache) {
-        pastGamesCache = getPastGames();
-    }
-    // Determine if the user won the game
-    let totalWins = 0;
-    for (let gameInfo of player.games) {
-        let gameDate = new Date(gameInfo[0]);
-        if (gameDate > endDate || gameDate < startDate) {
-            continue;
-        }
-        let gameData = pastGamesCache.get(gameInfo[0]);
-        if (gameData == null) {
-            continue;
-        }
-        for (let leftTeamPlayer of gameData.leftTeam) {
-            if (player.name == leftTeamPlayer.name) {
-                if (gameData.currentScore.leftCalculatedScore >= 21) {
-                    totalWins += 1;
+    return __awaiter(this, void 0, void 0, function* () {
+        // Determine if the user won the game
+        let totalWins = 0;
+        for (let gameInfo of player.games) {
+            let gameDate = new Date(gameInfo[0]);
+            if (gameDate > endDate || gameDate < startDate) {
+                continue;
+            }
+            let gameData = yield getGamePromise(gameInfo[0]);
+            if (gameData == null) {
+                continue;
+            }
+            for (let leftTeamPlayer of gameData.leftTeam) {
+                if (player.name == leftTeamPlayer.name) {
+                    if (gameData.currentScore.leftCalculatedScore >= 21) {
+                        totalWins += 1;
+                    }
+                }
+            }
+            for (let rightTeamPlayer of gameData.rightTeam) {
+                if (player.name == rightTeamPlayer.name) {
+                    if (gameData.currentScore.rightCalculatedScore >= 21) {
+                        totalWins += 1;
+                    }
                 }
             }
         }
-        for (let rightTeamPlayer of gameData.rightTeam) {
-            if (player.name == rightTeamPlayer.name) {
-                if (gameData.currentScore.rightCalculatedScore >= 21) {
-                    totalWins += 1;
-                }
-            }
-        }
-    }
-    return totalWins;
+        return totalWins;
+    });
 };
 let setupPlayerHistoryPage = function () {
-    pastGamesCache = getPastGames();
-    let unarchivedContainer = document.getElementById("non_archived_player_history_container");
-    let archivedContainer = document.getElementById("archived_player_history_container");
-    unarchivedContainer.innerHTML = "";
-    archivedContainer.innerHTML = "";
-    let sortingChoice = document.getElementsByName("sorting_rule")[0].selectedOptions[0].value;
-    let sortedPlayers = new Map([...getPlayers()].sort(sortingFunctions[sortingChoice]));
-    for (let player of sortedPlayers) {
-        if (player[1].games.size === 0) {
-            continue;
+    return __awaiter(this, void 0, void 0, function* () {
+        let unarchivedContainer = document.getElementById("non_archived_player_history_container");
+        let archivedContainer = document.getElementById("archived_player_history_container");
+        unarchivedContainer.innerHTML = "";
+        archivedContainer.innerHTML = "";
+        let sortingChoice = document.getElementsByName("sorting_rule")[0].selectedOptions[0].value;
+        let sortedPlayers = new Map([...yield getPlayers()].sort(sortingFunctions[sortingChoice]));
+        for (let player of sortedPlayers) {
+            if (player[1].games.size === 0) {
+                continue;
+            }
+            let aggregateData = yield getPlayerAggregateData(player[1]);
+            if (aggregateData.totalThrown === 0) {
+                continue;
+            }
+            let playerSection = document.createElement("section");
+            playerSection.className = "player_stat";
+            let nameTitle = createHeader3WithText(player[1].name);
+            nameTitle.classList.add("capitalize", "center_text");
+            let nameTitleLink = document.createElement("a");
+            nameTitleLink.setAttribute("href", "./individual_stats.html?playerName=" + player[1].name.replace(/ /g, "%20"));
+            nameTitleLink.setAttribute("target", "_blank");
+            nameTitleLink.appendChild(nameTitle);
+            playerSection.append(nameTitleLink);
+            playerSection.append(createHeader3WithText("Statistics"));
+            playerSection.append(createDivWithText("Games Played: "
+                + aggregateData.gamesPlayed.toString()
+                + ", Games Won: " + aggregateData.totalWins + " (" + Math.round((aggregateData.totalWins / aggregateData.gamesPlayed) * 100) + "%)"
+                + "<br>Frames Played: " + aggregateData.totalFrames, 
+            /* bold= */ false));
+            let tableContainer = getPlayerStatsTable(aggregateData);
+            playerSection.append(tableContainer);
+            playerSection.append(document.createElement("hr"));
+            if (player[1].archived) {
+                archivedContainer.append(playerSection);
+            }
+            else {
+                unarchivedContainer.append(playerSection);
+            }
         }
-        let aggregateData = getPlayerAggregateData(player[1]);
-        if (aggregateData.totalThrown === 0) {
-            continue;
-        }
-        let playerSection = document.createElement("section");
-        playerSection.className = "player_stat";
-        let nameTitle = createHeader3WithText(player[1].name);
-        nameTitle.classList.add("capitalize", "center_text");
-        let nameTitleLink = document.createElement("a");
-        nameTitleLink.setAttribute("href", "./individual_stats.html?playerName=" + player[1].name.replace(/ /g, "%20"));
-        nameTitleLink.setAttribute("target", "_blank");
-        nameTitleLink.appendChild(nameTitle);
-        playerSection.append(nameTitleLink);
-        playerSection.append(createHeader3WithText("Statistics"));
-        playerSection.append(createDivWithText("Games Played: "
-            + aggregateData.gamesPlayed.toString()
-            + ", Games Won: " + aggregateData.totalWins + " (" + Math.round((aggregateData.totalWins / aggregateData.gamesPlayed) * 100) + "%)"
-            + "<br>Frames Played: " + aggregateData.totalFrames, 
-        /* bold= */ false));
-        let tableContainer = getPlayerStatsTable(aggregateData);
-        playerSection.append(tableContainer);
-        playerSection.append(document.createElement("hr"));
-        if (player[1].archived) {
-            archivedContainer.append(playerSection);
-        }
-        else {
-            unarchivedContainer.append(playerSection);
-        }
-    }
+    });
 };
 let getPlayerStatsTable = function (aggregateData) {
     let tableContainer = document.createElement("table");

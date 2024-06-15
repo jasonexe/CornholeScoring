@@ -1,7 +1,4 @@
-// import idb from './idb.js';
-
 const SCOREHOLE_NAME = "scorehole";
-// let openRequest = idb.openDB(SCOREHOLE_NAME, 1);
 let openRequest = indexedDB.open(SCOREHOLE_NAME, 1);
 let db : IDBDatabase;
 
@@ -13,12 +10,27 @@ openRequest.onupgradeneeded = function(event : any) {
             // No existing database, initialize it
             db.createObjectStore(PLAYER_KEY, {keyPath: 'name'})
             db.createObjectStore(HISTORICAL_GAMES, {keyPath: 'id'})
+            let transaction = event.target.transaction;
+            // Migrate from existing game/player data
+            let existingPlayers : Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
+            if (existingPlayers) {
+                existingPlayers.forEach((player, key) => {
+                    updatePlayerData(player, transaction);
+                });
+            }
+            let existingGames : Map<number, CornholeGame> = localStorage.getObject(HISTORICAL_GAMES);
+            if (existingGames) {
+                existingGames.forEach((game: CornholeGame, key : Number) => {
+                    storePastGame(game, transaction);
+                });
+                break;
+            }
+            
             let player1 = new CornholePlayer("zzplayer1", false);
             let player2 = new CornholePlayer("zzplayer2", false);
             let player3 = new CornholePlayer("zzplayer3", false);
             let player4 = new CornholePlayer("zzplayer4", false);
             
-            let transaction = event.target.transaction;
             updatePlayerData(player1, transaction);
             updatePlayerData(player2, transaction);
             updatePlayerData(player3, transaction);

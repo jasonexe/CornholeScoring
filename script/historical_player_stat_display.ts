@@ -11,21 +11,21 @@ const sortingFunctions = {
         return bGamesPlayed - aGamesPlayed;
     },
     "average_score": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
-        let player1Aggregate = getPlayerAggregateData(a[1]);
-        let player2Aggregate = getPlayerAggregateData(b[1]);
+        let player1Aggregate = getPlayerAggregateDataWithoutWins(a[1]);
+        let player2Aggregate = getPlayerAggregateDataWithoutWins(b[1]);
         let average1ScorePerFrame = ((player1Aggregate.totalHoles * 3 + player1Aggregate.totalBoards) / (player1Aggregate.totalFrames));
         let average2ScorePerFrame = ((player2Aggregate.totalHoles * 3 + player2Aggregate.totalBoards) / (player2Aggregate.totalFrames));
         // Do 2 minus 1 because we want it to be descending
         return (average2ScorePerFrame || 0) - (average1ScorePerFrame || 0)
     },
     "hole_rate": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
-        let player1Aggregate = getPlayerAggregateData(a[1]);
-        let player2Aggregate = getPlayerAggregateData(b[1]);
+        let player1Aggregate = getPlayerAggregateDataWithoutWins(a[1]);
+        let player2Aggregate = getPlayerAggregateDataWithoutWins(b[1]);
         return (player2Aggregate.totalHoles / player2Aggregate.totalThrown) - (player1Aggregate.totalHoles / player1Aggregate.totalThrown);
     },
     "board_rate": (a: [string, CornholePlayer], b: [string, CornholePlayer]): number => {
-        let player1Aggregate = getPlayerAggregateData(a[1]);
-        let player2Aggregate = getPlayerAggregateData(b[1]);
+        let player1Aggregate = getPlayerAggregateDataWithoutWins(a[1]);
+        let player2Aggregate = getPlayerAggregateDataWithoutWins(b[1]);
         return (player2Aggregate.totalBoards / player2Aggregate.totalThrown) - (player1Aggregate.totalBoards / player1Aggregate.totalThrown);
     },
 }
@@ -98,11 +98,10 @@ let preloadDateRange = function (value: String) {
     (document.getElementById("end-date") as HTMLInputElement).value = endDate;
 }
 
-let getPlayerAggregateData = function (player: CornholePlayer) {
+let getPlayerAggregateDataWithoutWins = function (player: CornholePlayer) : PlayerData {
     let startDate = new Date((document.getElementById("start-date") as HTMLInputElement).value)
     let endDate = new Date((document.getElementById("end-date") as HTMLInputElement).value)
     let playerData = new PlayerData();
-    playerData.totalWins = getPlayerWins(player, startDate, endDate);
     for (let gameInfo of player.games) {
         // Determine how the player did in the game
         let gameDate = new Date(gameInfo[0]);
@@ -131,12 +130,16 @@ let getPlayerAggregateData = function (player: CornholePlayer) {
     return playerData;
 }
 
+let getPlayerAggregateData = async function (player: CornholePlayer) : Promise<PlayerData> {
+    let startDate = new Date((document.getElementById("start-date") as HTMLInputElement).value)
+    let endDate = new Date((document.getElementById("end-date") as HTMLInputElement).value)
+    let playerData = getPlayerAggregateDataWithoutWins(player);
+    playerData.totalWins = await getPlayerWins(player, startDate, endDate);
+    return playerData;
+}
+
 // This is set at the start of setupPlayerHistoryPage()
-let pastGamesCache = undefined;
-let getPlayerWins = function (player: CornholePlayer, startDate: Date, endDate: Date) {
-    if (!pastGamesCache) {
-        pastGamesCache = getPastGames();
-    }
+let getPlayerWins = async function (player: CornholePlayer, startDate: Date, endDate: Date) {
     // Determine if the user won the game
     let totalWins = 0;
     for (let gameInfo of player.games) {
@@ -144,7 +147,7 @@ let getPlayerWins = function (player: CornholePlayer, startDate: Date, endDate: 
         if (gameDate > endDate || gameDate < startDate) {
             continue;
         }
-        let gameData = pastGamesCache.get(gameInfo[0]);
+        let gameData = await getGamePromise(gameInfo[0]);
         if (gameData == null) {
             continue;
         }
@@ -166,19 +169,18 @@ let getPlayerWins = function (player: CornholePlayer, startDate: Date, endDate: 
     return totalWins;
 }
 
-let setupPlayerHistoryPage = function () {
-    pastGamesCache = getPastGames();
+let setupPlayerHistoryPage = async function () {
     let unarchivedContainer = document.getElementById("non_archived_player_history_container");
     let archivedContainer = document.getElementById("archived_player_history_container");
     unarchivedContainer.innerHTML = "";
     archivedContainer.innerHTML = "";
     let sortingChoice = (<HTMLSelectElement>document.getElementsByName("sorting_rule")[0]).selectedOptions[0].value;
-    let sortedPlayers = new Map([...getPlayers()].sort(sortingFunctions[sortingChoice]));
+    let sortedPlayers = new Map([...await getPlayers()].sort(sortingFunctions[sortingChoice]));
     for (let player of sortedPlayers) {
         if (player[1].games.size === 0) {
             continue;
         }
-        let aggregateData = getPlayerAggregateData(player[1]);
+        let aggregateData = await getPlayerAggregateData(player[1]);
         if (aggregateData.totalThrown === 0) {
             continue;
         }

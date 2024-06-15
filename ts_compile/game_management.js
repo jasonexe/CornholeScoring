@@ -242,14 +242,17 @@ let getCurrentGame = function () {
     return cachedCurrentGame;
 };
 let getPastGames = function () {
-    let pastGames = localStorage.getObject(HISTORICAL_GAMES);
-    if (pastGames) {
-        return new Map(pastGames);
-    }
-    return null;
+    return new Promise(function (resolve) {
+        let gamesTable = db.transaction(HISTORICAL_GAMES, "readonly").objectStore(HISTORICAL_GAMES);
+        let pastGames = gamesTable.getAll();
+        pastGames.onsuccess = function (event) {
+            let pastGameArray = event.target.result;
+            return resolve(pastGameArray ? new Map(pastGameArray.map((object) => [object.id, object])) : null);
+        };
+    });
 };
-let storePastGame = function (finishedGame) {
-    let transaction = db.transaction(HISTORICAL_GAMES, "readwrite");
+let storePastGame = function (finishedGame, transaction) {
+    transaction = transaction ? transaction : db.transaction(HISTORICAL_GAMES, "readwrite");
     let games = transaction.objectStore(HISTORICAL_GAMES);
     transaction.onerror = function () {
         alert("Writing failed");

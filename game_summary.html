@@ -149,8 +149,8 @@
         const database = getDatabase(app);
 
         // Do something like this to write/read from Firebase. NOTE: I still don't have a clue how modules work but whatever... if it works it works.
-        function writeGameData() {
-            let game = getGameFromUrl();
+        async function writeGameData() {
+            let game = await getGameFromUrl();
             let leftNameOne = game.leftTeam[0].name;
             let leftNameTwo = game.leftTeam[1].name;
             let rightNameOne = game.rightTeam[0].name;
@@ -167,9 +167,10 @@
 
             set(ref(database, 'games/' + storedGameId), game);
             for (let playerName of playerNames) {
+                let fullPlayerData = await getPlayerPromise(playerName);
                 set(ref(database,
                     "playerFrames/" + playerName + SHARING_ID_SEPARATOR + game.id),
-                    getPlayer(playerName).games.get(game.id));
+                    await fullPlayerData.games.get(game.id));
             }
             navigator.clipboard
                 .writeText("scorehole.com/game_summary.html?storedGameId=" + storedGameId)
@@ -192,12 +193,12 @@
                     playerName = playerName.replaceAll("¯", " ");
                     promises.push(get(child(ref(database), "playerFrames/" + playerName + SHARING_ID_SEPARATOR + gameStartTime)));
                 }
-                Promise.all(promises).then((snapshots) => {
-                    let game = CornholeGame.fromJson(snapshots[0].val(), false);
+                Promise.all(promises).then(async (snapshots) => {
+                    let game = await CornholeGame.fromJson(snapshots[0].val(), false);
                     for (let playerFrame of snapshots.slice(1)) {
                         let playerName = playerFrame.key.substring(0, playerFrame.key.indexOf(SHARING_ID_SEPARATOR));
-                        addGameToPlayer(gameStartTime, playerName, playerFrame.val());
-                        game.updatePlayer(getPlayer(playerName));
+                        await addGameToPlayer(gameStartTime, playerName, playerFrame.val());
+                        game.updatePlayer(await getPlayerPromise(playerName));
                     }
                     storePastGame(game);
                     displayGameInUrl();

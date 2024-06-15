@@ -3,10 +3,10 @@ const SHARING_ID_SEPARATOR = "_";
 // This method might be more appropriate in a new file, but I'm lazy
 // so just going to put it here. It initializes history.html. All the other
 // methods in this file manage game_summary.html
-let displayPastGamesSummary = function () {
+let displayPastGamesSummary = async function () {
     let mainSection = document.getElementById("past_game_summaries");
     mainSection.innerText = "";
-    for (let pastGame of getPastGames()) {
+    for (let pastGame of await getPastGames()) {
         let encapsulatingLink = document.createElement("a");
         encapsulatingLink.href = "game_summary.html?gameId=" + pastGame[1].id;
         encapsulatingLink.className = "no_style";

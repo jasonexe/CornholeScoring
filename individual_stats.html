@@ -117,7 +117,7 @@
         const resolvedId = await fingerprintId;
         let storedPlayerId = urlPlayerName() + "_-_" + resolvedId;
         let games = [];
-        for (let gameFrame of getPlayer(urlPlayerName()).games) {
+        for (let gameFrame of await getPlayerPromise(urlPlayerName()).games) {
             let pastGame = getPastGame(gameFrame[0]);
             if (!pastGame || pastGame.pastFrames.length === 0) {
                 continue;
@@ -171,11 +171,11 @@
         }
     });
 
-    let loadPage = function () {
+    let loadPage = async function () {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has("playerName")) {
             let playerName = urlPlayerName();
-            let player = getPlayer(playerName);
+            let player = await getPlayerPromise(playerName);
             displayStatsForPlayer(player);
         } else if (urlParams.has("storedPlayerRecord")) {
             const recordId = urlParams.get("storedPlayerRecord");
@@ -184,7 +184,7 @@
         }
     }
 
-    let displayStatsForPlayer = function (player) {
+    let displayStatsForPlayer = async function (player) {
         document.getElementById("playerName").innerHTML = player.name;
         let gameStatsData = [];
 
@@ -196,7 +196,7 @@
                 continue;
             }
             // Skip empty games
-            let gameStats = player.getGameStats(game[0]);
+            let gameStats = await player.getGameStats(game[0]);
             if (!gameStats) {
                 continue;
             }
@@ -216,14 +216,14 @@
 
     let loadEntirePlayerRecord = function (playerRecordId) {
         let playerName = playerRecordId.substring(0, playerRecordId.lastIndexOf("_-_"));
-        get(child(ref(getInfoDatabase), PLAYER_RECORD_PATH + playerRecordId)).then((snapshot) => {
+        get(child(ref(getInfoDatabase), PLAYER_RECORD_PATH + playerRecordId)).then(async (snapshot) => {
             for (let gamePrimitive of snapshot.val()) {
-                if (getPastGame(gamePrimitive.id)) {
+                if (await getPastGame(gamePrimitive.id)) {
                     // If the past game is already stored, we don't
                     // need to process it
                     continue;
                 }
-                let gameObject = CornholeGame.fromJson(gamePrimitive, /* pulledFromLocalStorage= */ true);
+                let gameObject = await CornholeGame.fromJson(gamePrimitive, /* pulledFromLocalStorage= */ true);
                 // Update the game objects for each of the players, which basically sets
                 // the IndividualFrame arrays on the Player. fromJson will register the
                 // games on them.
@@ -235,11 +235,11 @@
                 }
                 storePastGame(gameObject);
             }
-            displayStatsForPlayer(getPlayer(playerName));
+            displayStatsForPlayer(await getPlayerPromise(playerName));
         });
     }
 
-    let populateSummarizedStats = function (gameStatsData, player) {
+    let populateSummarizedStats = async function (gameStatsData, player) {
         let summarizedDiv = document.getElementById("summarizedStats");
         summarizedDiv.style.width = width + "px";
         let totalCornholes = 0;
@@ -247,7 +247,7 @@
         for (let gameStats of gameStatsData) {
             totalCornholes += gameStats.cornholes;
         }
-        let aggregateData = getPlayerAggregateData(player);
+        let aggregateData = await getPlayerAggregateData(player);
         let tableContainer = getPlayerStatsTable(aggregateData);
         summarizedDiv.innerHTML = totalGames + " Games, " + totalCornholes + " Cornholes";
         summarizedDiv.append(tableContainer);

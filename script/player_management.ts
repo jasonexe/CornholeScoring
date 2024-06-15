@@ -173,9 +173,16 @@ let urlPlayerName = function () {
     return "Error Retrieving Player";
 }
 
-let getPlayers = function (): Map<string, CornholePlayer> {
-    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    return new Map([...allPlayers.entries()].sort());
+let getPlayers = function (): Promise<Map<string, CornholePlayer>> {
+    return new Promise (function(resolve) {
+        let playersTable = db.transaction(PLAYER_KEY, "readonly").objectStore(PLAYER_KEY);
+        let allPlayers = playersTable.getAll();
+
+        allPlayers.onsuccess = function (event : any) {
+            let allPlayerArray : Array<CornholePlayer> = event.target.result;
+            return resolve(allPlayerArray ? new Map(allPlayerArray.map((object) => [object.name, object])) : null);
+        }
+    });
 }
 
 let createNewPlayer = function (firstTry: boolean) {
@@ -232,21 +239,4 @@ let archivePlayer = function() {
     allPlayers.get(archivePlayerName).archived = true;
     localStorage.setObject(PLAYER_KEY, allPlayers);
     updatePlayerSelectionList(/* initialize= */ false);
-}
-
-// Just initializes 4 players if there aren't any
-let initializePlayers = function () {
-    if (!localStorage.getObject(PLAYER_KEY)) {
-        let player1 = new CornholePlayer("zzplayer1", false);
-        let player2 = new CornholePlayer("zzplayer2", false);
-        let player3 = new CornholePlayer("zzplayer3", false);
-        let player4 = new CornholePlayer("zzplayer4", false);
-        let playerSet = new Map<string, CornholePlayer>();
-        playerSet.set(player2.name, player2);
-        playerSet.set(player1.name, player1);
-        playerSet.set(player3.name, player3);
-        playerSet.set(player4.name, player4);
-        console.log(playerSet);
-        localStorage.setObject(PLAYER_KEY, playerSet);
-    }
 }

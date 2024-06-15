@@ -272,16 +272,20 @@ let getCurrentGame = function (): CornholeGame {
     return cachedCurrentGame;
 }
 
-let getPastGames = function (): Map<number, CornholeGame> {
-    let pastGames = localStorage.getObject(HISTORICAL_GAMES);
-    if (pastGames) {
-        return new Map(pastGames);
-    }
-    return null;
+let getPastGames = function (): Promise<Map<number, CornholeGame>> {
+    return new Promise (function(resolve) {
+        let gamesTable = db.transaction(HISTORICAL_GAMES, "readonly").objectStore(HISTORICAL_GAMES);
+        let pastGames = gamesTable.getAll();
+
+        pastGames.onsuccess = function (event : any) {
+            let pastGameArray : Array<CornholeGame> = event.target.result;
+            return resolve(pastGameArray ? new Map(pastGameArray.map((object) => [object.id, object])) : null);
+        }
+    });
 }
 
-let storePastGame = function (finishedGame: CornholeGame) {
-    let transaction = db.transaction(HISTORICAL_GAMES, "readwrite");
+let storePastGame = function (finishedGame: CornholeGame, transaction? : IDBTransaction) {
+    transaction = transaction ? transaction : db.transaction(HISTORICAL_GAMES, "readwrite");
     let games = transaction.objectStore(HISTORICAL_GAMES);
     transaction.onerror = function() {
         alert("Writing failed");

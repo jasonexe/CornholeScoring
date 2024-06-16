@@ -275,7 +275,8 @@ let getCurrentGame = function (): CornholeGame {
 let getPastGames = function (): Promise<Map<number, CornholeGame>> {
     return new Promise (function(resolve) {
         let gamesTable = db.transaction(HISTORICAL_GAMES, "readonly").objectStore(HISTORICAL_GAMES);
-        let pastGames = gamesTable.getAll();
+        // Get all games from the past 60 days.
+        let pastGames = gamesTable.getAll(IDBKeyRange.lowerBound(Date.now() - 24 * 3600 * 1000 * 60));
 
         pastGames.onsuccess = function (event : any) {
             let pastGameArray : Array<CornholeGame> = event.target.result;

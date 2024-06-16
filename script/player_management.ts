@@ -173,6 +173,7 @@ let urlPlayerName = function () {
     return "Error Retrieving Player";
 }
 
+// Returns all players that have been stored.
 let getPlayers = function (): Promise<Map<string, CornholePlayer>> {
     return new Promise (function(resolve) {
         let playersTable = db.transaction(PLAYER_KEY, "readonly").objectStore(PLAYER_KEY);

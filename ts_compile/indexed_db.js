@@ -1,5 +1,5 @@
 const SCOREHOLE_NAME = "scorehole";
-let openRequest = indexedDB.open(SCOREHOLE_NAME, 1);
+let openRequest = indexedDB.open(SCOREHOLE_NAME, 2);
 let db;
 openRequest.onupgradeneeded = function (event) {
     // initialize, read from localStorage if necessary
@@ -11,17 +11,19 @@ openRequest.onupgradeneeded = function (event) {
             db.createObjectStore(HISTORICAL_GAMES, { keyPath: 'id' });
             let transaction = event.target.transaction;
             // Migrate from existing game/player data
-            let existingPlayers = localStorage.getObject(PLAYER_KEY);
-            if (existingPlayers) {
-                existingPlayers.forEach((player, key) => {
-                    updatePlayerData(player, transaction);
-                });
-            }
             let existingGames = localStorage.getObject(HISTORICAL_GAMES);
             if (existingGames) {
                 existingGames.forEach((game, key) => {
                     storePastGame(game, transaction);
                 });
+                localStorage.removeItem(HISTORICAL_GAMES);
+            }
+            let existingPlayers = localStorage.getObject(PLAYER_KEY);
+            if (existingPlayers) {
+                existingPlayers.forEach((player, key) => {
+                    updatePlayerData(player, transaction);
+                });
+                localStorage.removeItem(PLAYER_KEY);
                 break;
             }
             let player1 = new CornholePlayer("zzplayer1", false);

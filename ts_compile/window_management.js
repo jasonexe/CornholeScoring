@@ -32,7 +32,7 @@ const swapTeamTwoPlayers = function () {
 // selector options will update without changing the current selection.
 const updatePlayerSelectionList = function (initialize) {
     return __awaiter(this, void 0, void 0, function* () {
-        let allPlayers = localStorage.getObject(PLAYER_KEY);
+        let allPlayers = yield getPlayers();
         let mostRecentGame;
         if ((yield getPastGames()) && initialize) {
             mostRecentGame = [...(yield getPastGames()).entries()].reduce((firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);

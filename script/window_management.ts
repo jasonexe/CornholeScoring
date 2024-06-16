@@ -27,7 +27,7 @@ const swapTeamTwoPlayers = function () {
 // Set initialize to true if you want to pre-set the selectors to whatever the previous game was. If initialize is false, then the
 // selector options will update without changing the current selection.
 const updatePlayerSelectionList = async function (initialize: boolean) {
-    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
+    let allPlayers: Map<string, CornholePlayer> = await getPlayers();
     let mostRecentGame;
     if (await getPastGames() && initialize) {
         mostRecentGame = [...(await getPastGames()).entries()].reduce(

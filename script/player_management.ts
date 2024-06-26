@@ -145,6 +145,11 @@ class CornholePlayer {
     }
 }
 
+/**
+ * Adds the player into the database.
+ * @param player The player object to add
+ * @param transaction Optionally, a transaction to do the writing within
+ */
 function updatePlayerData (player: CornholePlayer, transaction? : IDBTransaction) {
     transaction = transaction ? transaction : db.transaction(PLAYER_KEY, "readwrite");
     let players = transaction.objectStore(PLAYER_KEY);
@@ -186,7 +191,7 @@ let getPlayers = function (): Promise<Map<string, CornholePlayer>> {
     });
 }
 
-let createNewPlayer = function (firstTry: boolean) {
+let createNewPlayer = async function (firstTry: boolean) {
     let playerName = prompt(firstTry ?
         "What is the name of the player?"
         : "That name is already taken, try another one");
@@ -195,49 +200,42 @@ let createNewPlayer = function (firstTry: boolean) {
     }
     playerName = playerName.toLocaleLowerCase();
     let player = new CornholePlayer(playerName, /* archived= */ false);
-    if (localStorage.getObject(PLAYER_KEY) === null) {
-        // will have to create an empty array. Would like to use Set but seems it doesn't work in JS
-        let playerSet = new Map<string, CornholePlayer>();
-        playerSet.set(player.name, player);
-        localStorage.setObject(PLAYER_KEY, playerSet);
+    if (await getPlayerPromise(playerName)) {
+        createNewPlayer(/* firstTry= */ false);
     } else {
-        let playerSet: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-        console.log(playerSet.get(playerName));
-        if (!playerSet.get(playerName)) {
-            playerSet.set(playerName, player);
-            localStorage.setObject(PLAYER_KEY, playerSet);
-        } else {
-            createNewPlayer(/* firstTry= */ false);
-        }
+        updatePlayerData(player);
     }
 
     updatePlayerSelectionList(/* initialize= */ false);
 }
 
-let favoritePlayer = function() {
+let favoritePlayer = async function() {
     let favoritePlayerSelector = <HTMLSelectElement> document.getElementById("player_to_remove");
     let favoritePlayerName = favoritePlayerSelector.selectedOptions[0].value;
-    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    allPlayers.get(favoritePlayerName).favorite = !allPlayers.get(favoritePlayerName).favorite;
-    localStorage.setObject(PLAYER_KEY, allPlayers);
+    let player = await getPlayerPromise(favoritePlayerName);
+    player.favorite = !player.favorite;
+    updatePlayerData(player);
     updatePlayerSelectionList(/* initialize= */ false);
 }
 
-let removePlayer = function() {
+let removePlayer = async function() {
     let removalPlayerSelector = <HTMLSelectElement> document.getElementById("player_to_remove");
     let removedPlayerName = removalPlayerSelector.selectedOptions[0].value;
-    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    allPlayers.delete(removedPlayerName);
-    localStorage.setObject(PLAYER_KEY, allPlayers);
+
+    let transaction = db.transaction(PLAYER_KEY, "readwrite");
+    let players = transaction.objectStore(PLAYER_KEY);
+    transaction.onerror = function() {
+        alert("Writing failed");
+    }
+    players.delete(removedPlayerName);
     updatePlayerSelectionList(/* initialize= */ false);
 }
 
-let archivePlayer = function() {
+let archivePlayer = async function() {
     let archivePlayerSelector = <HTMLSelectElement> document.getElementById("player_to_remove");
     let archivePlayerName = archivePlayerSelector.selectedOptions[0].value;
-    let allPlayers: Map<string, CornholePlayer> = localStorage.getObject(PLAYER_KEY);
-    // Archive using the variable so we don't need a deep copy
-    allPlayers.get(archivePlayerName).archived = true;
-    localStorage.setObject(PLAYER_KEY, allPlayers);
+    let player = await getPlayerPromise(archivePlayerName);
+    player.archived = true;
+    updatePlayerData(player);
     updatePlayerSelectionList(/* initialize= */ false);
 }

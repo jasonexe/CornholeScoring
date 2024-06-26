@@ -34,7 +34,7 @@ const updatePlayerSelectionList = function (initialize) {
     return __awaiter(this, void 0, void 0, function* () {
         let allPlayers = yield getPlayers();
         let mostRecentGame;
-        if ((yield getPastGames()) && initialize) {
+        if ((yield getPastGames()).size > 0 && initialize) {
             mostRecentGame = [...(yield getPastGames()).entries()].reduce((firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
         }
         else if (!initialize) {

@@ -29,7 +29,7 @@ const swapTeamTwoPlayers = function () {
 const updatePlayerSelectionList = async function (initialize: boolean) {
     let allPlayers: Map<string, CornholePlayer> = await getPlayers();
     let mostRecentGame;
-    if (await getPastGames() && initialize) {
+    if ((await getPastGames()).size > 0 && initialize) {
         mostRecentGame = [...(await getPastGames()).entries()].reduce(
             (firstElement, secondElement) => secondElement[0] > firstElement[0] ? secondElement : firstElement);
     } else if (!initialize) {

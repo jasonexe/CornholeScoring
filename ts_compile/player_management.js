@@ -142,6 +142,11 @@ class CornholePlayer {
         });
     }
 }
+/**
+ * Adds the player into the database.
+ * @param player The player object to add
+ * @param transaction Optionally, a transaction to do the writing within
+ */
 function updatePlayerData(player, transaction) {
     transaction = transaction ? transaction : db.transaction(PLAYER_KEY, "readwrite");
     let players = transaction.objectStore(PLAYER_KEY);
@@ -182,56 +187,55 @@ let getPlayers = function () {
     });
 };
 let createNewPlayer = function (firstTry) {
-    let playerName = prompt(firstTry ?
-        "What is the name of the player?"
-        : "That name is already taken, try another one");
-    if (!playerName) {
-        return;
-    }
-    playerName = playerName.toLocaleLowerCase();
-    let player = new CornholePlayer(playerName, /* archived= */ false);
-    if (localStorage.getObject(PLAYER_KEY) === null) {
-        // will have to create an empty array. Would like to use Set but seems it doesn't work in JS
-        let playerSet = new Map();
-        playerSet.set(player.name, player);
-        localStorage.setObject(PLAYER_KEY, playerSet);
-    }
-    else {
-        let playerSet = localStorage.getObject(PLAYER_KEY);
-        console.log(playerSet.get(playerName));
-        if (!playerSet.get(playerName)) {
-            playerSet.set(playerName, player);
-            localStorage.setObject(PLAYER_KEY, playerSet);
+    return __awaiter(this, void 0, void 0, function* () {
+        let playerName = prompt(firstTry ?
+            "What is the name of the player?"
+            : "That name is already taken, try another one");
+        if (!playerName) {
+            return;
         }
-        else {
+        playerName = playerName.toLocaleLowerCase();
+        let player = new CornholePlayer(playerName, /* archived= */ false);
+        if (yield getPlayerPromise(playerName)) {
             createNewPlayer(/* firstTry= */ false);
         }
-    }
-    updatePlayerSelectionList(/* initialize= */ false);
+        else {
+            updatePlayerData(player);
+        }
+        updatePlayerSelectionList(/* initialize= */ false);
+    });
 };
 let favoritePlayer = function () {
-    let favoritePlayerSelector = document.getElementById("player_to_remove");
-    let favoritePlayerName = favoritePlayerSelector.selectedOptions[0].value;
-    let allPlayers = localStorage.getObject(PLAYER_KEY);
-    allPlayers.get(favoritePlayerName).favorite = !allPlayers.get(favoritePlayerName).favorite;
-    localStorage.setObject(PLAYER_KEY, allPlayers);
-    updatePlayerSelectionList(/* initialize= */ false);
+    return __awaiter(this, void 0, void 0, function* () {
+        let favoritePlayerSelector = document.getElementById("player_to_remove");
+        let favoritePlayerName = favoritePlayerSelector.selectedOptions[0].value;
+        let player = yield getPlayerPromise(favoritePlayerName);
+        player.favorite = !player.favorite;
+        updatePlayerData(player);
+        updatePlayerSelectionList(/* initialize= */ false);
+    });
 };
 let removePlayer = function () {
-    let removalPlayerSelector = document.getElementById("player_to_remove");
-    let removedPlayerName = removalPlayerSelector.selectedOptions[0].value;
-    let allPlayers = localStorage.getObject(PLAYER_KEY);
-    allPlayers.delete(removedPlayerName);
-    localStorage.setObject(PLAYER_KEY, allPlayers);
-    updatePlayerSelectionList(/* initialize= */ false);
+    return __awaiter(this, void 0, void 0, function* () {
+        let removalPlayerSelector = document.getElementById("player_to_remove");
+        let removedPlayerName = removalPlayerSelector.selectedOptions[0].value;
+        let transaction = db.transaction(PLAYER_KEY, "readwrite");
+        let players = transaction.objectStore(PLAYER_KEY);
+        transaction.onerror = function () {
+            alert("Writing failed");
+        };
+        players.delete(removedPlayerName);
+        updatePlayerSelectionList(/* initialize= */ false);
+    });
 };
 let archivePlayer = function () {
-    let archivePlayerSelector = document.getElementById("player_to_remove");
-    let archivePlayerName = archivePlayerSelector.selectedOptions[0].value;
-    let allPlayers = localStorage.getObject(PLAYER_KEY);
-    // Archive using the variable so we don't need a deep copy
-    allPlayers.get(archivePlayerName).archived = true;
-    localStorage.setObject(PLAYER_KEY, allPlayers);
-    updatePlayerSelectionList(/* initialize= */ false);
+    return __awaiter(this, void 0, void 0, function* () {
+        let archivePlayerSelector = document.getElementById("player_to_remove");
+        let archivePlayerName = archivePlayerSelector.selectedOptions[0].value;
+        let player = yield getPlayerPromise(archivePlayerName);
+        player.archived = true;
+        updatePlayerData(player);
+        updatePlayerSelectionList(/* initialize= */ false);
+    });
 };
 //# sourceMappingURL=player_management.js.map
